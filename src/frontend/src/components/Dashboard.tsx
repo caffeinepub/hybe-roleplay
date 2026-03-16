@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AuditionFlow } from "./AuditionFlow";
+import { CreatorsPanel } from "./CreatorsPanel";
 import { PanelView } from "./PanelView";
 
 type PanelId = "creators" | "inventory" | "elements" | "events";
@@ -55,6 +56,10 @@ export function Dashboard({ visible }: { visible: boolean }) {
 
   if (activePanel === "inventory") {
     return <AuditionFlow onBack={() => setActivePanel(null)} />;
+  }
+
+  if (activePanel === "creators") {
+    return <CreatorsPanel onBack={() => setActivePanel(null)} />;
   }
 
   if (activePanel) {
