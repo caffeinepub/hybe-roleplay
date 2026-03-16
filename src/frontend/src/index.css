@@ -1,0 +1,296 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Raleway:wght@300;400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0 0;
+    --foreground: 92 0.01 285;
+    --card: 5 0.02 50;
+    --card-foreground: 92 0.01 285;
+    --popover: 5 0.02 50;
+    --popover-foreground: 92 0.01 285;
+    --primary: 75 0.18 50;
+    --primary-foreground: 0 0 0;
+    --secondary: 12 0.04 50;
+    --secondary-foreground: 92 0.01 285;
+    --muted: 12 0.03 50;
+    --muted-foreground: 60 0.05 50;
+    --accent: 75 0.18 50;
+    --accent-foreground: 0 0 0;
+    --destructive: 50 0.2 25;
+    --destructive-foreground: 92 0.01 285;
+    --border: 20 0.08 50;
+    --input: 15 0.06 50;
+    --ring: 75 0.18 50;
+    --radius: 0.25rem;
+    --chart-1: 75 0.18 50;
+    --chart-2: 55 0.12 285;
+    --chart-3: 40 0.08 285;
+    --chart-4: 65 0.15 180;
+    --chart-5: 50 0.1 50;
+    --sidebar: 0 0 0;
+    --sidebar-foreground: 92 0.01 285;
+    --sidebar-primary: 75 0.18 50;
+    --sidebar-primary-foreground: 0 0 0;
+    --sidebar-accent: 12 0.04 50;
+    --sidebar-accent-foreground: 92 0.01 285;
+    --sidebar-border: 20 0.08 50;
+    --sidebar-ring: 75 0.18 50;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Raleway", sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+/* ── Cinematic Intro ── */
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0.85;
+  }
+  94% {
+    opacity: 1;
+  }
+  96% {
+    opacity: 0.9;
+  }
+  97% {
+    opacity: 1;
+  }
+}
+
+/* Projector flash — white/gold burst at the moment the title appears */
+@keyframes projectorFlash {
+  0% {
+    background: radial-gradient(
+      ellipse 60% 40% at 50% 50%,
+      oklch(98 0.04 50 / 0.55) 0%,
+      oklch(75 0.18 50 / 0.2) 40%,
+      transparent 70%
+    );
+    opacity: 1;
+  }
+  25% {
+    background: radial-gradient(
+      ellipse 60% 40% at 50% 50%,
+      oklch(98 0.04 50 / 0.8) 0%,
+      oklch(75 0.18 50 / 0.3) 40%,
+      transparent 70%
+    );
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Scan line sweeping from top to bottom */
+@keyframes scanLine {
+  0% {
+    top: -2px;
+    opacity: 0.7;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes hybeFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes hybeFadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Cinematic clip-path + translateY reveal for the h1 */
+@keyframes titleSlideUp {
+  0% {
+    transform: translateY(105%);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
+
+@keyframes letterReveal {
+  0% {
+    opacity: 0;
+    transform: scale(1.4) translateY(12px);
+    filter: blur(12px);
+    text-shadow: 0 0 60px oklch(75 0.18 50 / 0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.05) translateY(-2px);
+    filter: blur(0px);
+    text-shadow: 0 0 30px oklch(75 0.18 50 / 0.7), 0 0 80px
+      oklch(75 0.18 50 / 0.3);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+    text-shadow: 0 0 20px oklch(75 0.18 50 / 0.5);
+  }
+}
+
+@keyframes introFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes dashboardFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes panelReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes particleDrift {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-120px) translateX(var(--drift, 20px)) scale(0.4);
+    opacity: 0;
+  }
+}
+
+@keyframes rayPulse {
+  0%,
+  100% {
+    opacity: 0.04;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.12;
+    transform: scaleY(1.05);
+  }
+}
+
+.intro-container {
+  animation: introFadeOut 0.8s ease-in-out forwards;
+}
+
+.hybe-title-fadein {
+  animation: hybeFadeIn 1.2s ease-in-out forwards;
+}
+
+.hybe-title-fadeout {
+  animation: hybeFadeOut 0.8s ease-in-out forwards;
+}
+
+/* Clip-path title reveal — slides up from below the overflow-hidden wrapper */
+.hybe-title-reveal {
+  animation: titleSlideUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.intro-letter {
+  display: inline-block;
+  opacity: 0;
+  animation: letterReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.dashboard-enter {
+  animation: dashboardFadeIn 1s ease-out forwards;
+}
+
+.panel-button {
+  animation: panelReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.panel-button:hover {
+  box-shadow: 0 0 20px oklch(75 0.18 50 / 0.3), 0 0 40px oklch(75 0.18 50 / 0.1);
+  border-color: oklch(75 0.18 50 / 0.9) !important;
+}
+
+.gold-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(75 0.18 50 / 0),
+    oklch(75 0.18 50 / 0.8),
+    oklch(75 0.18 50 / 0)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
