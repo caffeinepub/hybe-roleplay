@@ -3,8 +3,15 @@ import { AuditionFlow } from "./AuditionFlow";
 import { CarnivalPanel } from "./CarnivalPanel";
 import { CreatorsPanel } from "./CreatorsPanel";
 import { ElementsPanel } from "./ElementsPanel";
+import { HighlightsPanel } from "./HighlightsPanel";
 
-type PanelId = "creators" | "inventory" | "elements" | "events";
+type PanelId =
+  | "creators"
+  | "inventory"
+  | "elements"
+  | "events"
+  | "channel"
+  | "highlights";
 
 interface Panel {
   id: PanelId;
@@ -13,6 +20,7 @@ interface Panel {
   description: string;
   ocid: string;
   delay: string;
+  externalUrl?: string;
 }
 
 const PANELS: Panel[] = [
@@ -48,6 +56,23 @@ const PANELS: Panel[] = [
     ocid: "dashboard.events_panel",
     delay: "240ms",
   },
+  {
+    id: "channel",
+    label: "Channel",
+    icon: "⊹",
+    description: "Join our WhatsApp channel",
+    ocid: "dashboard.channel_panel",
+    delay: "320ms",
+    externalUrl: "https://whatsapp.com/channel/0029VbCEwmU4dTnRdoJutS08",
+  },
+  {
+    id: "highlights",
+    label: "Highlights",
+    icon: "◉",
+    description: "Captured moments",
+    ocid: "dashboard.highlights_panel",
+    delay: "400ms",
+  },
 ];
 
 export function Dashboard({ visible }: { visible: boolean }) {
@@ -70,6 +95,18 @@ export function Dashboard({ visible }: { visible: boolean }) {
   if (activePanel === "events") {
     return <CarnivalPanel onComplete={() => setActivePanel(null)} />;
   }
+
+  if (activePanel === "highlights") {
+    return <HighlightsPanel onBack={() => setActivePanel(null)} />;
+  }
+
+  const handlePanelClick = (panel: Panel) => {
+    if (panel.externalUrl) {
+      window.open(panel.externalUrl, "_blank", "noopener,noreferrer");
+    } else {
+      setActivePanel(panel.id);
+    }
+  };
 
   return (
     <div
@@ -149,7 +186,7 @@ export function Dashboard({ visible }: { visible: boolean }) {
             type="button"
             key={panel.id}
             data-ocid={panel.ocid}
-            onClick={() => setActivePanel(panel.id)}
+            onClick={() => handlePanelClick(panel)}
             className="panel-button group w-full max-w-lg flex items-center gap-4 px-6 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
             style={{
               animationDelay: panel.delay,
