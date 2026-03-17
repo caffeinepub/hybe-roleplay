@@ -26,6 +26,8 @@ function saveHighlights(items: Highlight[]) {
 
 export function HighlightsPanel({ onBack }: { onBack: () => void }) {
   const [highlights, setHighlights] = useState<Highlight[]>(loadHighlights);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPinInput, setShowPinInput] = useState(false);
   const [pin, setPin] = useState("");
@@ -38,10 +40,41 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
   const [formCaption, setFormCaption] = useState("");
   const [formImage, setFormImage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const autoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const highlightsLenRef = useRef(highlights.length);
+
+  useEffect(() => {
+    highlightsLenRef.current = highlights.length;
+  }, [highlights.length]);
 
   useEffect(() => {
     saveHighlights(highlights);
   }, [highlights]);
+
+  // Auto-scroll carousel every 2 seconds
+  useEffect(() => {
+    if (highlights.length <= 1) return;
+    autoTimer.current = setInterval(() => {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % highlightsLenRef.current);
+        setIsTransitioning(false);
+      }, 400);
+    }, 2000);
+    return () => {
+      if (autoTimer.current) clearInterval(autoTimer.current);
+    };
+  }, [highlights.length]);
+
+  const goTo = (idx: number) => {
+    if (idx === currentIndex) return;
+    if (autoTimer.current) clearInterval(autoTimer.current);
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentIndex(idx);
+      setIsTransitioning(false);
+    }, 400);
+  };
 
   const handlePinSubmit = () => {
     if (pin === ADMIN_PIN) {
@@ -109,7 +142,10 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
 
   const handleDelete = (id: string) => {
     setHighlights((prev) => prev.filter((h) => h.id !== id));
+    setCurrentIndex(0);
   };
+
+  const currentHighlight = highlights[currentIndex] ?? highlights[0];
 
   return (
     <div
@@ -136,8 +172,17 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
         />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-5">
+      {/* Header — glass mirror */}
+      <header
+        className="relative z-10 flex items-center justify-between px-6 py-5"
+        style={{
+          background: "rgba(255, 255, 255, 0.04)",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          borderBottom: "1px solid oklch(75 0.18 50 / 0.12)",
+          borderRadius: "0 0 16px 16px",
+        }}
+      >
         <button
           type="button"
           data-ocid="highlights.button"
@@ -179,6 +224,9 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
             style={{
               color: "oklch(75 0.18 50)",
               border: "1px solid oklch(75 0.18 50 / 0.4)",
+              borderRadius: "8px",
+              background: "rgba(255,255,255,0.03)",
+              backdropFilter: "blur(8px)",
             }}
           >
             [ Admin ]
@@ -192,6 +240,7 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
               color: "oklch(75 0.18 50)",
               border: "1px solid oklch(75 0.18 50 / 0.6)",
               background: "oklch(75 0.18 50 / 0.08)",
+              borderRadius: "8px",
             }}
           >
             [ Exit Admin ]
@@ -203,10 +252,15 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
       {showPinInput && (
         <div
           data-ocid="highlights.panel"
-          className="relative z-20 mx-6 mb-4 p-4 flex flex-col gap-3"
+          className="relative z-20 mx-6 mb-4 mt-4 p-4 flex flex-col gap-3"
           style={{
             border: "1px solid oklch(75 0.18 50 / 0.3)",
-            background: "oklch(10 0.03 50 / 0.8)",
+            background: "rgba(255, 255, 255, 0.04)",
+            backdropFilter: "blur(20px) saturate(160%)",
+            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+            borderRadius: "12px",
+            boxShadow:
+              "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}
         >
           <p
@@ -227,6 +281,7 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
               style={{
                 color: "oklch(75 0.18 50)",
                 border: "1px solid oklch(75 0.18 50 / 0.4)",
+                borderRadius: "8px",
               }}
             />
             <button
@@ -237,6 +292,8 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
               style={{
                 color: "#000",
                 background: "oklch(75 0.18 50)",
+                borderRadius: "8px",
+                boxShadow: "0 0 12px oklch(75 0.18 50 / 0.4)",
               }}
             >
               Enter
@@ -256,7 +313,7 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
 
       {/* Admin: Add Highlight button */}
       {isAdmin && (
-        <div className="relative z-10 flex justify-center mb-6 px-6">
+        <div className="relative z-10 flex justify-center mb-4 mt-4 px-6">
           <button
             type="button"
             data-ocid="highlights.primary_button"
@@ -265,6 +322,8 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
             style={{
               color: "#000",
               background: "oklch(75 0.18 50)",
+              borderRadius: "10px",
+              boxShadow: "0 0 16px oklch(75 0.18 50 / 0.45)",
             }}
           >
             <ImagePlus size={14} />
@@ -274,7 +333,7 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
       )}
 
       {/* Main content */}
-      <main className="relative z-10 px-6 pb-16">
+      <main className="relative z-10 px-4 pb-16">
         {highlights.length === 0 ? (
           <div
             data-ocid="highlights.empty_state"
@@ -302,91 +361,204 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
             />
           </div>
         ) : (
-          <div
-            className="flex flex-col gap-5 max-w-lg mx-auto"
-            data-ocid="highlights.list"
-          >
-            {highlights.map((h, i) => (
-              <div
-                key={h.id}
-                data-ocid={`highlights.item.${i + 1}`}
-                className="relative overflow-hidden group"
-                style={{
-                  minHeight: "220px",
-                  border: "1px solid oklch(75 0.18 50 / 0.5)",
-                  animation: "fadeIn 0.6s ease forwards",
-                  animationDelay: `${i * 80}ms`,
-                  opacity: 0,
-                }}
-              >
-                {/* Full-bleed background image */}
-                <img
-                  src={h.imageDataUrl}
-                  alt={h.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                {/* Dark gradient overlay */}
+          <div className="max-w-lg mx-auto">
+            {/* Carousel - full bleed single card */}
+            <div
+              className="relative overflow-hidden"
+              style={{
+                height: "55vh",
+                minHeight: "300px",
+                borderRadius: "16px",
+                border: "1px solid oklch(75 0.18 50 / 0.35)",
+                boxShadow:
+                  "0 0 40px oklch(75 0.18 50 / 0.12), 0 8px 32px rgba(0,0,0,0.5)",
+              }}
+            >
+              {currentHighlight && (
                 <div
-                  className="absolute inset-0"
                   style={{
-                    background:
-                      "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%)",
+                    position: "absolute",
+                    inset: 0,
+                    backgroundImage: `url('${currentHighlight.imageDataUrl}')`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    opacity: isTransitioning ? 0 : 1,
+                    transition: "opacity 0.4s ease",
+                    borderRadius: "16px",
                   }}
                 />
-                {/* Text content */}
-                <div className="relative z-10 flex flex-col justify-end h-full min-h-[220px] p-5">
-                  <h3
-                    className="font-cinzel font-bold tracking-[0.15em] uppercase mb-1"
-                    style={{
-                      fontSize: "clamp(1rem, 2.5vw, 1.3rem)",
-                      color: "oklch(75 0.18 50)",
-                      textShadow: "0 2px 8px rgba(0,0,0,0.8)",
-                    }}
+              )}
+              {/* Gradient overlay */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.75) 100%)",
+                  borderRadius: "16px",
+                }}
+              />
+
+              {/* Text overlay */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  padding: "1.5rem",
+                  opacity: isTransitioning ? 0 : 1,
+                  transition: "opacity 0.4s ease",
+                }}
+              >
+                <h3
+                  className="font-cinzel font-bold tracking-[0.15em] uppercase mb-1"
+                  style={{
+                    fontSize: "clamp(1rem, 2.5vw, 1.3rem)",
+                    color: "oklch(75 0.18 50)",
+                    textShadow: "0 2px 8px rgba(0,0,0,0.8)",
+                  }}
+                >
+                  {currentHighlight?.title}
+                </h3>
+                {currentHighlight?.caption && (
+                  <p
+                    className="font-raleway text-sm tracking-wider"
+                    style={{ color: "rgba(255,255,255,0.7)" }}
                   >
-                    {h.title}
-                  </h3>
-                  {h.caption && (
-                    <p
-                      className="font-raleway text-sm tracking-wider"
-                      style={{ color: "rgba(255,255,255,0.7)" }}
-                    >
-                      {h.caption}
-                    </p>
-                  )}
-                </div>
-                {/* Admin controls */}
-                {isAdmin && (
-                  <div className="absolute top-3 right-3 z-20 flex gap-2">
-                    <button
-                      type="button"
-                      data-ocid={`highlights.edit_button.${i + 1}`}
-                      onClick={() => openEditForm(h)}
-                      className="p-2 transition-all hover:opacity-80"
-                      style={{
-                        background: "oklch(75 0.18 50 / 0.15)",
-                        border: "1px solid oklch(75 0.18 50 / 0.5)",
-                        color: "oklch(75 0.18 50)",
-                      }}
-                    >
-                      <Pencil size={12} />
-                    </button>
-                    <button
-                      type="button"
-                      data-ocid={`highlights.delete_button.${i + 1}`}
-                      onClick={() => handleDelete(h.id)}
-                      className="p-2 transition-all hover:opacity-80"
-                      style={{
-                        background: "oklch(30 0.15 25 / 0.3)",
-                        border: "1px solid oklch(60 0.2 25 / 0.5)",
-                        color: "oklch(70 0.18 25)",
-                      }}
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
+                    {currentHighlight.caption}
+                  </p>
                 )}
               </div>
-            ))}
+
+              {/* Admin controls on slide */}
+              {isAdmin && currentHighlight && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "1rem",
+                    right: "1rem",
+                    display: "flex",
+                    gap: "0.5rem",
+                    zIndex: 10,
+                  }}
+                >
+                  <button
+                    type="button"
+                    data-ocid={`highlights.edit_button.${currentIndex + 1}`}
+                    onClick={() => openEditForm(currentHighlight)}
+                    className="p-2 transition-all hover:opacity-80"
+                    style={{
+                      background: "rgba(255,255,255,0.1)",
+                      backdropFilter: "blur(8px)",
+                      border: "1px solid oklch(75 0.18 50 / 0.5)",
+                      color: "oklch(75 0.18 50)",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <Pencil size={12} />
+                  </button>
+                  <button
+                    type="button"
+                    data-ocid={`highlights.delete_button.${currentIndex + 1}`}
+                    onClick={() => handleDelete(currentHighlight.id)}
+                    className="p-2 transition-all hover:opacity-80"
+                    style={{
+                      background: "oklch(30 0.15 25 / 0.3)",
+                      backdropFilter: "blur(8px)",
+                      border: "1px solid oklch(60 0.2 25 / 0.5)",
+                      color: "oklch(70 0.18 25)",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              )}
+
+              {/* Dot indicators */}
+              {highlights.length > 1 && (
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "1.25rem",
+                    right: "1rem",
+                    display: "flex",
+                    gap: "0.5rem",
+                    zIndex: 10,
+                  }}
+                >
+                  {highlights.map((h, i) => (
+                    <button
+                      type="button"
+                      key={h.id}
+                      data-ocid={`highlights.toggle.${i + 1}`}
+                      onClick={() => goTo(i)}
+                      style={{
+                        width: i === currentIndex ? "24px" : "8px",
+                        height: "8px",
+                        border: "none",
+                        cursor: "pointer",
+                        transition: "all 0.3s ease",
+                        background:
+                          i === currentIndex
+                            ? "oklch(75 0.18 50)"
+                            : "oklch(75 0.18 50 / 0.35)",
+                        boxShadow:
+                          i === currentIndex
+                            ? "0 0 8px oklch(75 0.18 50 / 0.6)"
+                            : "none",
+                        borderRadius: "4px",
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Thumbnail strip */}
+            {highlights.length > 1 && (
+              <div
+                className="flex gap-3 mt-4 overflow-x-auto pb-2"
+                data-ocid="highlights.list"
+                style={{ scrollbarWidth: "none" }}
+              >
+                {highlights.map((h, i) => (
+                  <button
+                    type="button"
+                    key={h.id}
+                    data-ocid={`highlights.item.${i + 1}`}
+                    onClick={() => goTo(i)}
+                    className="shrink-0 transition-all duration-300"
+                    style={{
+                      width: "72px",
+                      height: "52px",
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                      border:
+                        i === currentIndex
+                          ? "2px solid oklch(75 0.18 50)"
+                          : "2px solid oklch(75 0.18 50 / 0.25)",
+                      boxShadow:
+                        i === currentIndex
+                          ? "0 0 12px oklch(75 0.18 50 / 0.5)"
+                          : "none",
+                      opacity: i === currentIndex ? 1 : 0.55,
+                    }}
+                  >
+                    <img
+                      src={h.imageDataUrl}
+                      alt={h.title}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>
@@ -396,13 +568,21 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
         <div
           data-ocid="highlights.modal"
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.9)" }}
+          style={{
+            background: "rgba(0,0,0,0.75)",
+            backdropFilter: "blur(8px)",
+          }}
         >
           <div
             className="w-full max-w-md p-6 flex flex-col gap-4"
             style={{
-              background: "#0a0a0a",
-              border: "1px solid oklch(75 0.18 50 / 0.5)",
+              background: "rgba(10, 8, 4, 0.85)",
+              backdropFilter: "blur(24px) saturate(180%)",
+              WebkitBackdropFilter: "blur(24px) saturate(180%)",
+              border: "1px solid oklch(75 0.18 50 / 0.4)",
+              borderRadius: "16px",
+              boxShadow:
+                "0 0 48px oklch(75 0.18 50 / 0.1), 0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)",
             }}
           >
             <div className="flex items-center justify-between mb-2">
@@ -416,8 +596,8 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
                 type="button"
                 data-ocid="highlights.close_button"
                 onClick={() => setShowForm(false)}
-                className="transition-opacity hover:opacity-60"
-                style={{ color: "oklch(75 0.18 50)" }}
+                className="transition-opacity hover:opacity-60 p-1"
+                style={{ color: "oklch(75 0.18 50)", borderRadius: "6px" }}
               >
                 <X size={16} />
               </button>
@@ -441,6 +621,7 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
                   minHeight: "100px",
                   background: "oklch(75 0.18 50 / 0.03)",
                   display: "flex",
+                  borderRadius: "10px",
                 }}
               >
                 {formImage ? (
@@ -448,6 +629,7 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
                     src={formImage}
                     alt="preview"
                     className="w-full max-h-48 object-cover"
+                    style={{ borderRadius: "10px" }}
                   />
                 ) : (
                   <div className="flex flex-col items-center gap-2 py-6">
@@ -495,6 +677,8 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
                 style={{
                   color: "oklch(90 0.05 50)",
                   border: "1px solid oklch(75 0.18 50 / 0.3)",
+                  borderRadius: "8px",
+                  background: "rgba(255,255,255,0.03)",
                 }}
               />
             </div>
@@ -519,6 +703,8 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
                 style={{
                   color: "oklch(90 0.05 50)",
                   border: "1px solid oklch(75 0.18 50 / 0.3)",
+                  borderRadius: "8px",
+                  background: "rgba(255,255,255,0.03)",
                 }}
               />
             </div>
@@ -533,6 +719,7 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
                 style={{
                   color: "oklch(75 0.18 50)",
                   border: "1px solid oklch(75 0.18 50 / 0.3)",
+                  borderRadius: "8px",
                 }}
               >
                 Cancel
@@ -546,6 +733,8 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
                 style={{
                   color: "#000",
                   background: "oklch(75 0.18 50)",
+                  borderRadius: "8px",
+                  boxShadow: "0 0 14px oklch(75 0.18 50 / 0.4)",
                 }}
               >
                 Save
@@ -554,13 +743,6 @@ export function HighlightsPanel({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(16px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }

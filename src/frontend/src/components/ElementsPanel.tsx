@@ -120,8 +120,17 @@ export function ElementsPanel({ onBack }: ElementsPanelProps) {
         />
       </div>
 
-      {/* Back button */}
-      <div className="relative z-10 flex items-center justify-between px-6 pt-6 pb-2">
+      {/* Back button — glass mirror */}
+      <div
+        className="relative z-10 flex items-center justify-between px-6 pt-5 pb-4"
+        style={{
+          background: "rgba(255, 255, 255, 0.04)",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          borderBottom: "1px solid oklch(75 0.18 50 / 0.1)",
+          borderRadius: "0 0 16px 16px",
+        }}
+      >
         <button
           type="button"
           data-ocid="elements.back_button"
@@ -131,7 +140,9 @@ export function ElementsPanel({ onBack }: ElementsPanelProps) {
             color: "oklch(75 0.18 50)",
             border: "1px solid oklch(75 0.18 50 / 0.4)",
             padding: "6px 16px",
-            background: "transparent",
+            background: "rgba(255,255,255,0.03)",
+            backdropFilter: "blur(8px)",
+            borderRadius: "20px",
           }}
         >
           ← Back
@@ -152,13 +163,15 @@ export function ElementsPanel({ onBack }: ElementsPanelProps) {
           data-ocid="elements.prev_button"
           onClick={prev}
           disabled={current === 0}
-          className="absolute left-4 z-20 font-cinzel text-2xl cursor-pointer focus:outline-none transition-opacity duration-200"
+          className="absolute left-4 z-20 font-cinzel text-2xl cursor-pointer focus:outline-none transition-all duration-300"
           style={{
             color: "oklch(75 0.18 50)",
             opacity: current === 0 ? 0.15 : 0.6,
-            background: "transparent",
-            border: "none",
-            padding: "12px",
+            background: "rgba(255,255,255,0.05)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid oklch(75 0.18 50 / 0.2)",
+            padding: "10px 14px",
+            borderRadius: "50%",
           }}
         >
           ‹
@@ -170,13 +183,15 @@ export function ElementsPanel({ onBack }: ElementsPanelProps) {
           data-ocid="elements.next_button"
           onClick={next}
           disabled={current === ELEMENTS.length - 1}
-          className="absolute right-4 z-20 font-cinzel text-2xl cursor-pointer focus:outline-none transition-opacity duration-200"
+          className="absolute right-4 z-20 font-cinzel text-2xl cursor-pointer focus:outline-none transition-all duration-300"
           style={{
             color: "oklch(75 0.18 50)",
             opacity: current === ELEMENTS.length - 1 ? 0.15 : 0.6,
-            background: "transparent",
-            border: "none",
-            padding: "12px",
+            background: "rgba(255,255,255,0.05)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid oklch(75 0.18 50 / 0.2)",
+            padding: "10px 14px",
+            borderRadius: "50%",
           }}
         >
           ›
@@ -231,32 +246,55 @@ export function ElementsPanel({ onBack }: ElementsPanelProps) {
               {el.subtitle}
             </p>
 
-            {/* Tagline */}
-            <p
-              className="font-raleway italic tracking-widest mb-6"
+            {/* Tagline — glass pill */}
+            <div
+              className="mb-6 px-4 py-2"
               style={{
-                fontSize: "clamp(0.9rem, 2.5vw, 1.2rem)",
-                color: "oklch(75 0.18 50)",
-                opacity: 0.85,
+                background: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid oklch(75 0.18 50 / 0.2)",
+                borderRadius: "20px",
               }}
             >
-              {el.tagline}
-            </p>
+              <p
+                className="font-raleway italic tracking-widest"
+                style={{
+                  fontSize: "clamp(0.9rem, 2.5vw, 1.2rem)",
+                  color: "oklch(75 0.18 50)",
+                  opacity: 0.85,
+                }}
+              >
+                {el.tagline}
+              </p>
+            </div>
 
             {/* Decorative line */}
             <div className="h-px w-16 gold-shimmer mb-6" />
 
-            {/* Description */}
-            <p
-              className="font-raleway leading-relaxed"
+            {/* Description — glass card */}
+            <div
+              className="px-6 py-5"
               style={{
-                fontSize: "clamp(0.85rem, 2vw, 1rem)",
-                color: "rgba(255,255,255,0.7)",
-                maxWidth: "500px",
+                background: "rgba(255, 255, 255, 0.03)",
+                backdropFilter: "blur(16px) saturate(160%)",
+                WebkitBackdropFilter: "blur(16px) saturate(160%)",
+                border: "1px solid oklch(75 0.18 50 / 0.1)",
+                borderRadius: "14px",
+                boxShadow:
+                  "0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
               }}
             >
-              {el.description}
-            </p>
+              <p
+                className="font-raleway leading-relaxed"
+                style={{
+                  fontSize: "clamp(0.85rem, 2vw, 1rem)",
+                  color: "rgba(255,255,255,0.7)",
+                  maxWidth: "500px",
+                }}
+              >
+                {el.description}
+              </p>
+            </div>
 
             {/* Decorative bottom line */}
             <div className="h-px w-24 gold-shimmer mt-8" />
@@ -264,8 +302,16 @@ export function ElementsPanel({ onBack }: ElementsPanelProps) {
         </AnimatePresence>
       </div>
 
-      {/* Dot indicators */}
-      <div className="relative z-10 flex justify-center gap-3 pb-8 pt-4">
+      {/* Dot indicators — glass pill */}
+      <div
+        className="relative z-10 flex justify-center gap-3 py-5 mx-auto px-6"
+        style={{
+          background: "rgba(255, 255, 255, 0.03)",
+          backdropFilter: "blur(12px)",
+          borderTop: "1px solid oklch(75 0.18 50 / 0.08)",
+          width: "100%",
+        }}
+      >
         {ELEMENTS.map((elem, idx) => (
           <button
             type="button"
@@ -283,6 +329,8 @@ export function ElementsPanel({ onBack }: ElementsPanelProps) {
                   : "oklch(75 0.18 50 / 0.3)",
               border: "none",
               padding: 0,
+              boxShadow:
+                idx === current ? "0 0 8px oklch(75 0.18 50 / 0.5)" : "none",
             }}
             aria-label={`Go to ${elem.name}`}
           />

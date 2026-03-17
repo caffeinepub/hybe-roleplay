@@ -206,21 +206,31 @@ function GoldButton({
       disabled={disabled}
       className={`font-cinzel tracking-[0.2em] uppercase transition-all duration-300 disabled:opacity-40 ${small ? "text-xs px-4 py-1.5" : "text-sm px-8 py-3"}`}
       style={{
-        background: "#000",
+        background: danger
+          ? "oklch(30 0.12 25 / 0.15)"
+          : "rgba(255,255,255,0.03)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
         border: danger
           ? "1px solid oklch(55 0.22 25 / 0.7)"
           : "1px solid oklch(75 0.18 50 / 0.7)",
         color: danger ? "oklch(65 0.22 25)" : "oklch(75 0.18 50)",
         cursor: disabled ? "not-allowed" : "pointer",
+        borderRadius: "9px",
+        boxShadow: danger
+          ? "0 0 10px oklch(55 0.22 25 / 0.2), inset 0 1px 0 rgba(255,255,255,0.04)"
+          : "0 0 10px oklch(75 0.18 50 / 0.15), inset 0 1px 0 rgba(255,255,255,0.05)",
       }}
       onMouseEnter={(e) => {
         if (!disabled)
           (e.currentTarget as HTMLButtonElement).style.boxShadow = danger
-            ? "0 0 20px oklch(55 0.22 25 / 0.4), 0 0 40px oklch(55 0.22 25 / 0.15)"
-            : "0 0 20px oklch(75 0.18 50 / 0.4), 0 0 40px oklch(75 0.18 50 / 0.15)";
+            ? "0 0 20px oklch(55 0.22 25 / 0.45), 0 0 40px oklch(55 0.22 25 / 0.15), inset 0 1px 0 rgba(255,255,255,0.04)"
+            : "0 0 20px oklch(75 0.18 50 / 0.5), 0 0 40px oklch(75 0.18 50 / 0.2), inset 0 1px 0 rgba(255,255,255,0.08)";
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+        (e.currentTarget as HTMLButtonElement).style.boxShadow = danger
+          ? "0 0 10px oklch(55 0.22 25 / 0.2), inset 0 1px 0 rgba(255,255,255,0.04)"
+          : "0 0 10px oklch(75 0.18 50 / 0.15), inset 0 1px 0 rgba(255,255,255,0.05)";
       }}
     >
       {children}
@@ -307,38 +317,20 @@ function RulesOverlay({ onNext }: { onNext: () => void }) {
     <div
       data-ocid="audition.rules_overlay"
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.95)" }}
+      style={{ background: "rgba(0,0,0,0.92)", backdropFilter: "blur(6px)" }}
     >
       <div
         className="relative w-full max-w-2xl max-h-[90vh] flex flex-col"
         style={{
-          border: "1px solid oklch(75 0.18 50 / 0.6)",
-          background: "#000",
+          border: "1px solid oklch(75 0.18 50 / 0.5)",
+          background: "rgba(8, 6, 2, 0.88)",
+          backdropFilter: "blur(28px) saturate(180%)",
+          WebkitBackdropFilter: "blur(28px) saturate(180%)",
+          borderRadius: "20px",
+          boxShadow:
+            "0 0 60px oklch(75 0.18 50 / 0.12), 0 24px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)",
         }}
       >
-        {[
-          "top-0 left-0",
-          "top-0 right-0",
-          "bottom-0 left-0",
-          "bottom-0 right-0",
-        ].map((pos, i) => (
-          <div
-            key={pos}
-            className={`absolute ${pos} w-4 h-4 pointer-events-none`}
-            style={{
-              border: "2px solid oklch(75 0.18 50)",
-              clipPath:
-                i === 0
-                  ? "polygon(0 0,100% 0,0 100%)"
-                  : i === 1
-                    ? "polygon(0 0,100% 0,100% 100%)"
-                    : i === 2
-                      ? "polygon(0 0,0 100%,100% 100%)"
-                      : "polygon(100% 0,0 100%,100% 100%)",
-            }}
-          />
-        ))}
-
         <div className="overflow-y-auto flex-1 px-6 pt-8 pb-4">
           <div className="text-center mb-6">
             <p
@@ -373,8 +365,10 @@ function RulesOverlay({ onNext }: { onNext: () => void }) {
                   style={{
                     border: "1px solid oklch(75 0.18 50 / 0.4)",
                     color: "oklch(75 0.18 50)",
-                    background: "oklch(75 0.18 50 / 0.06)",
+                    background: "oklch(75 0.18 50 / 0.08)",
                     letterSpacing: "0.1em",
+                    borderRadius: "6px",
+                    boxShadow: "0 0 8px oklch(75 0.18 50 / 0.1)",
                   }}
                 >
                   {rule.num}
@@ -393,8 +387,12 @@ function RulesOverlay({ onNext }: { onNext: () => void }) {
         </div>
 
         <div
-          className="px-6 py-5 text-center border-t"
-          style={{ borderColor: "oklch(75 0.18 50 / 0.2)" }}
+          className="px-6 py-5 text-center"
+          style={{
+            borderTop: "1px solid oklch(75 0.18 50 / 0.15)",
+            borderRadius: "0 0 20px 20px",
+            background: "rgba(255,255,255,0.02)",
+          }}
         >
           <GoldButton onClick={onNext} ocid="audition.rules_next_button">
             [ Next ]
@@ -425,8 +423,24 @@ function VacancyPanel({
   const [desiredName, setDesiredName] = useState("");
   const [desiredCategory, setDesiredCategory] = useState("");
   const [desiredBandName, setDesiredBandName] = useState("");
+  // Admin: removed groups
+  const [removedGroups, setRemovedGroups] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem("hybe_removed_groups");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  // Admin: add group form
+  const [showAddGroup, setShowAddGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupMembers, setNewGroupMembers] = useState("");
+  const [addGroupError, setAddGroupError] = useState("");
 
-  const availableItems = vacancyItems.filter((v) => !v.taken);
+  const availableItems = vacancyItems.filter(
+    (v) => !v.taken && !removedGroups.includes(v.group),
+  );
   const takenItems = vacancyItems.filter((v) => v.taken);
 
   // Group available items by group
@@ -464,7 +478,6 @@ function VacancyPanel({
   }
 
   function removeAvailableVacancy(id: string) {
-    // Mark as taken (remove from available) via admin action
     const updated = vacancyItems.map((v) =>
       v.id === id ? { ...v, taken: true } : v,
     );
@@ -474,7 +487,6 @@ function VacancyPanel({
 
   function addCustomVacancy() {
     if (!newTitle.trim()) return;
-    // Add as a custom VacancyItem
     const newItem: VacancyItem = {
       id: `custom-${Date.now()}`,
       group: "Custom",
@@ -488,21 +500,68 @@ function VacancyPanel({
     setNewDesc("");
   }
 
+  function removeGroup(groupName: string) {
+    const updated = [...removedGroups, groupName];
+    setRemovedGroups(updated);
+    localStorage.setItem("hybe_removed_groups", JSON.stringify(updated));
+  }
+
+  function addGroup() {
+    setAddGroupError("");
+    const name = newGroupName.trim();
+    if (!name) {
+      setAddGroupError("Group name is required.");
+      return;
+    }
+    // Check duplicate (case insensitive) among active groups
+    const allVacancyGroups = vacancyItems.map((v) => v.group.toLowerCase());
+    if (
+      allVacancyGroups.includes(name.toLowerCase()) &&
+      !removedGroups.map((g) => g.toLowerCase()).includes(name.toLowerCase())
+    ) {
+      setAddGroupError("A group with this name already exists.");
+      return;
+    }
+    // Parse members: split by newline or comma
+    const rawMembers = newGroupMembers;
+    const members = rawMembers
+      .split(/[\n,]/)
+      .map((m) => m.trim())
+      .filter(Boolean);
+    if (members.length === 0) {
+      setAddGroupError("At least one member is required.");
+      return;
+    }
+    const newItems: VacancyItem[] = members.map((member) => ({
+      id: `${name}-${member}-${Date.now()}`.toLowerCase().replace(/\s+/g, "-"),
+      group: name,
+      member,
+      taken: false,
+    }));
+    const updated = [...vacancyItems, ...newItems];
+    setVacancyItems(updated);
+    saveVacancyItems(updated);
+    // Remove from removedGroups if it was previously removed
+    const updatedRemoved = removedGroups.filter(
+      (g) => g.toLowerCase() !== name.toLowerCase(),
+    );
+    setRemovedGroups(updatedRemoved);
+    localStorage.setItem("hybe_removed_groups", JSON.stringify(updatedRemoved));
+    setNewGroupName("");
+    setNewGroupMembers("");
+    setShowAddGroup(false);
+  }
+
   function openResponses() {
     setResponses(getResponses());
     setShowResponses(true);
   }
 
   function deleteResponse(responseId: string) {
-    // Find the response to get the vacancyTitle
     const allResp = getResponses();
     const target = allResp.find((r) => r.id === responseId);
-
-    // Remove response from localStorage
     const updated = allResp.filter((r) => r.id !== responseId);
     localStorage.setItem("hybe_responses", JSON.stringify(updated));
-
-    // Restore vacancy if we can find a match
     if (target) {
       const titleLower = target.vacancyTitle.toLowerCase();
       const matchedItem = vacancyItems.find((item) => {
@@ -517,8 +576,6 @@ function VacancyPanel({
         saveVacancyItems(updatedVacancies);
       }
     }
-
-    // Update responses state
     setResponses(updated);
   }
 
@@ -536,14 +593,17 @@ function VacancyPanel({
     });
   }
 
-  const goldInput =
-    "bg-black font-raleway text-sm border outline-none focus:ring-1 px-3 py-2 w-full";
   const goldInputStyle = {
     borderColor: "oklch(75 0.18 50 / 0.4)",
     color: "oklch(85 0.05 50)",
-    background: "#000",
+    background: "rgba(255,255,255,0.03)",
+    backdropFilter: "blur(8px)",
     caretColor: "oklch(75 0.18 50)",
+    borderRadius: "8px",
   };
+
+  const goldInput =
+    "bg-transparent font-raleway text-sm border outline-none focus:ring-1 px-3 py-2 w-full";
 
   const groupOrder = DEFAULT_VACANCY_GROUPS.map((g) => g.group);
   const sortedGroups = Object.keys(groupedAvailable).sort((a, b) => {
@@ -572,15 +632,20 @@ function VacancyPanel({
         >
           ‹ Back
         </button>
-        {/* Admin button row - completely above the title */}
+        {/* Admin button row */}
         {!isAdmin && (
           <div className="flex justify-end mb-4">
             <button
               type="button"
               data-ocid="audition.admin_button"
               onClick={() => setShowPinModal(true)}
-              className="font-cinzel text-xs tracking-[0.3em] uppercase opacity-20 hover:opacity-60 transition-opacity"
-              style={{ color: "oklch(75 0.18 50)" }}
+              className="font-cinzel text-xs tracking-[0.3em] uppercase px-3 py-1 opacity-20 hover:opacity-60 transition-all"
+              style={{
+                color: "oklch(75 0.18 50)",
+                border: "1px solid oklch(75 0.18 50 / 0.3)",
+                borderRadius: "20px",
+                background: "transparent",
+              }}
             >
               [ Admin ]
             </button>
@@ -625,7 +690,7 @@ function VacancyPanel({
                     <div
                       className="pt-5 pb-2"
                       style={{
-                        borderTop: "1px solid oklch(75 0.18 50 / 0.15)",
+                        borderTop: "1px solid oklch(75 0.18 50 / 0.12)",
                       }}
                     >
                       <p
@@ -635,46 +700,55 @@ function VacancyPanel({
                         {group}
                       </p>
                     </div>
-                    {/* Member rows */}
-                    {groupedAvailable[group].map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        className="w-full flex items-center justify-between px-3 py-2.5 group transition-all duration-200"
-                        style={{ background: "transparent" }}
-                        onClick={() =>
-                          onSelectVacancy({
-                            id: Date.now().toString(),
-                            title: `${item.group} · ${item.member}`,
-                            description: "",
-                            vacancyId: item.id,
-                          })
-                        }
-                        onMouseEnter={(e) => {
-                          (
-                            e.currentTarget as HTMLButtonElement
-                          ).style.background = "oklch(75 0.18 50 / 0.05)";
-                        }}
-                        onMouseLeave={(e) => {
-                          (
-                            e.currentTarget as HTMLButtonElement
-                          ).style.background = "transparent";
-                        }}
-                      >
-                        <span
-                          className="font-raleway text-sm tracking-wide"
-                          style={{ color: "oklch(80 0.09 50)" }}
+                    {/* Member cards grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2 mb-3">
+                      {groupedAvailable[group].map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className="text-center transition-all duration-200"
+                          style={{
+                            background: "rgba(255,255,255,0.05)",
+                            backdropFilter: "blur(16px) saturate(180%)",
+                            WebkitBackdropFilter: "blur(16px) saturate(180%)",
+                            border: "1px solid oklch(75 0.18 50 / 0.45)",
+                            borderRadius: "14px",
+                            boxShadow: "0 0 14px oklch(75 0.18 50 / 0.15)",
+                            padding: "16px 12px",
+                            cursor: "pointer",
+                          }}
+                          onClick={() =>
+                            onSelectVacancy({
+                              id: Date.now().toString(),
+                              title: `${item.group} · ${item.member}`,
+                              description: "",
+                              vacancyId: item.id,
+                            })
+                          }
+                          onMouseEnter={(e) => {
+                            const el = e.currentTarget as HTMLButtonElement;
+                            el.style.border =
+                              "1px solid oklch(75 0.18 50 / 0.8)";
+                            el.style.boxShadow =
+                              "0 0 22px oklch(75 0.18 50 / 0.35)";
+                          }}
+                          onMouseLeave={(e) => {
+                            const el = e.currentTarget as HTMLButtonElement;
+                            el.style.border =
+                              "1px solid oklch(75 0.18 50 / 0.45)";
+                            el.style.boxShadow =
+                              "0 0 14px oklch(75 0.18 50 / 0.15)";
+                          }}
                         >
-                          {item.member}
-                        </span>
-                        <span
-                          className="opacity-30 group-hover:opacity-80 transition-opacity text-lg"
-                          style={{ color: "oklch(75 0.18 50)" }}
-                        >
-                          ›
-                        </span>
-                      </button>
-                    ))}
+                          <span
+                            className="font-raleway text-sm tracking-wide"
+                            style={{ color: "oklch(85 0.09 50)" }}
+                          >
+                            {item.member}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -683,7 +757,7 @@ function VacancyPanel({
             {/* Optional desired role section */}
             <div
               className="mt-10 pt-8"
-              style={{ borderTop: "1px dotted oklch(75 0.18 50 / 0.3)" }}
+              style={{ borderTop: "1px dotted oklch(75 0.18 50 / 0.25)" }}
             >
               <p
                 className="font-cinzel text-xs tracking-[0.35em] uppercase mb-1"
@@ -736,15 +810,16 @@ function VacancyPanel({
                       background:
                         desiredCategory === cat
                           ? "oklch(75 0.18 50 / 0.12)"
-                          : "transparent",
+                          : "rgba(255,255,255,0.02)",
                       color:
                         desiredCategory === cat
                           ? "oklch(75 0.18 50)"
                           : "oklch(75 0.18 50 / 0.5)",
                       boxShadow:
                         desiredCategory === cat
-                          ? "0 0 12px oklch(75 0.18 50 / 0.25)"
+                          ? "0 0 14px oklch(75 0.18 50 / 0.3)"
                           : "none",
+                      borderRadius: "20px",
                     }}
                   >
                     [ {cat} ]
@@ -774,30 +849,52 @@ function VacancyPanel({
                 </div>
               )}
 
-              <GoldButton
-                onClick={proceedWithDesiredRole}
-                ocid="audition.desired_role.submit_button"
-                disabled={
-                  !desiredName.trim() ||
-                  !desiredCategory ||
-                  desiredNameTaken ||
-                  (desiredCategory === "Band / Name" && !desiredBandName.trim())
-                }
-              >
-                [ Proceed ]
-              </GoldButton>
+              {desiredName.trim() && desiredCategory && !desiredNameTaken && (
+                <GoldButton
+                  onClick={proceedWithDesiredRole}
+                  ocid="audition.desired_role_proceed_button"
+                >
+                  Proceed →
+                </GoldButton>
+              )}
             </div>
           </>
         )}
         {/* ── ADMIN VIEW ── */}
         {isAdmin && (
           <div className="space-y-8">
+            {/* Admin header */}
+            <div
+              className="text-center p-4"
+              style={{
+                background: "rgba(255,255,255,0.03)",
+                backdropFilter: "blur(16px) saturate(160%)",
+                WebkitBackdropFilter: "blur(16px) saturate(160%)",
+                border: "1px solid oklch(75 0.18 50 / 0.2)",
+                borderRadius: "12px",
+                boxShadow:
+                  "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
+              }}
+            >
+              <p
+                className="font-cinzel text-xs tracking-[0.4em] uppercase"
+                style={{ color: "oklch(75 0.18 50 / 0.7)" }}
+              >
+                Admin Mode Active
+              </p>
+            </div>
+
             {/* Add Custom Vacancy */}
             <div
-              className="p-6"
+              className="p-5 space-y-3"
               style={{
-                border: "1px solid oklch(75 0.18 50 / 0.3)",
-                background: "oklch(75 0.18 50 / 0.03)",
+                border: "1px solid oklch(75 0.18 50 / 0.2)",
+                background: "rgba(255,255,255,0.03)",
+                backdropFilter: "blur(16px) saturate(160%)",
+                WebkitBackdropFilter: "blur(16px) saturate(160%)",
+                borderRadius: "14px",
+                boxShadow:
+                  "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
               }}
             >
               <p
@@ -840,8 +937,86 @@ function VacancyPanel({
                 </GoldButton>
               </div>
             </div>
+
+            {/* Add Group Section */}
+            <div
+              className="p-5"
+              style={{
+                border: "1px solid oklch(75 0.18 50 / 0.2)",
+                background: "rgba(255,255,255,0.03)",
+                backdropFilter: "blur(16px) saturate(160%)",
+                WebkitBackdropFilter: "blur(16px) saturate(160%)",
+                borderRadius: "14px",
+                boxShadow:
+                  "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
+              }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <p
+                  className="font-cinzel text-xs tracking-[0.3em] uppercase"
+                  style={{ color: "oklch(75 0.18 50)" }}
+                >
+                  Add Group
+                </p>
+                <GoldButton
+                  small
+                  ocid="audition.add_group_toggle.button"
+                  onClick={() => {
+                    setShowAddGroup((v) => !v);
+                    setAddGroupError("");
+                  }}
+                >
+                  {showAddGroup ? "Cancel" : "+ Add Group"}
+                </GoldButton>
+              </div>
+              {showAddGroup && (
+                <div className="space-y-3 mt-2">
+                  <input
+                    data-ocid="audition.add_group_name.input"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    className={goldInput}
+                    style={goldInputStyle}
+                    placeholder="Group name (e.g. BTS)"
+                  />
+                  <textarea
+                    data-ocid="audition.add_group_members.textarea"
+                    value={newGroupMembers}
+                    onChange={(e) => setNewGroupMembers(e.target.value)}
+                    className={`${goldInput} resize-none`}
+                    style={goldInputStyle}
+                    rows={4}
+                    placeholder="Members (one per line or comma-separated)"
+                  />
+                  {addGroupError && (
+                    <p
+                      data-ocid="audition.add_group.error_state"
+                      className="font-raleway text-xs"
+                      style={{ color: "oklch(55 0.2 25)" }}
+                    >
+                      {addGroupError}
+                    </p>
+                  )}
+                  <GoldButton
+                    onClick={addGroup}
+                    ocid="audition.add_group_submit.button"
+                  >
+                    Create Group
+                  </GoldButton>
+                </div>
+              )}
+            </div>
+
             {/* Active Vacancies */}
-            <div>
+            <div
+              className="p-5"
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                backdropFilter: "blur(12px)",
+                border: "1px solid oklch(75 0.18 50 / 0.12)",
+                borderRadius: "14px",
+              }}
+            >
               <p
                 className="font-cinzel text-xs tracking-[0.3em] uppercase mb-4"
                 style={{ color: "oklch(75 0.18 50)" }}
@@ -857,12 +1032,12 @@ function VacancyPanel({
                 </p>
               ) : (
                 <div className="space-y-1">
-                  {sortedGroups.map((group) => (
+                  {sortedGroups.map((group, gi) => (
                     <div key={group}>
                       <div
-                        className="pt-4 pb-2"
+                        className="pt-4 pb-2 flex items-center justify-between"
                         style={{
-                          borderTop: "1px solid oklch(75 0.18 50 / 0.15)",
+                          borderTop: "1px solid oklch(75 0.18 50 / 0.12)",
                         }}
                       >
                         <p
@@ -871,6 +1046,14 @@ function VacancyPanel({
                         >
                           {group}
                         </p>
+                        <GoldButton
+                          small
+                          danger
+                          ocid={`audition.remove_group.button.${gi + 1}`}
+                          onClick={() => removeGroup(group)}
+                        >
+                          Remove Group
+                        </GoldButton>
                       </div>
                       {groupedAvailable[group].map((item) => (
                         <div
@@ -903,7 +1086,15 @@ function VacancyPanel({
             </div>
 
             {/* Taken Roles */}
-            <div>
+            <div
+              className="p-5"
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                backdropFilter: "blur(12px)",
+                border: "1px solid oklch(75 0.18 50 / 0.1)",
+                borderRadius: "14px",
+              }}
+            >
               <p
                 className="font-cinzel text-xs tracking-[0.3em] uppercase mb-4"
                 style={{ color: "oklch(75 0.18 50 / 0.6)" }}
@@ -918,15 +1109,16 @@ function VacancyPanel({
                   No roles taken yet
                 </p>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {takenItems.map((item, i) => (
                     <div
                       key={item.id}
                       data-ocid={`audition.taken.item.${i + 1}`}
                       className="flex items-center justify-between px-3 py-2"
                       style={{
-                        border: "1px solid oklch(75 0.18 50 / 0.15)",
-                        background: "oklch(75 0.18 50 / 0.02)",
+                        border: "1px solid oklch(75 0.18 50 / 0.12)",
+                        background: "oklch(75 0.18 50 / 0.03)",
+                        borderRadius: "8px",
                       }}
                     >
                       <span
@@ -956,8 +1148,13 @@ function VacancyPanel({
         <DialogContent
           className="max-w-sm"
           style={{
-            background: "#000",
-            border: "1px solid oklch(75 0.18 50 / 0.5)",
+            background: "rgba(8, 6, 2, 0.88)",
+            backdropFilter: "blur(28px) saturate(180%)",
+            WebkitBackdropFilter: "blur(28px) saturate(180%)",
+            border: "1px solid oklch(75 0.18 50 / 0.4)",
+            borderRadius: "16px",
+            boxShadow:
+              "0 0 48px oklch(75 0.18 50 / 0.1), 0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}
         >
           <DialogHeader>
@@ -978,9 +1175,10 @@ function VacancyPanel({
               onKeyDown={(e) => e.key === "Enter" && submitPin()}
               className="font-raleway"
               style={{
-                background: "#000",
+                background: "rgba(255,255,255,0.03)",
                 borderColor: "oklch(75 0.18 50 / 0.4)",
                 color: "oklch(85 0.05 50)",
+                borderRadius: "8px",
               }}
             />
             {pinError && (
@@ -1007,8 +1205,13 @@ function VacancyPanel({
           data-ocid="audition.responses.dialog"
           className="max-w-2xl max-h-[80vh] overflow-y-auto"
           style={{
-            background: "#000",
-            border: "1px solid oklch(75 0.18 50 / 0.5)",
+            background: "rgba(8, 6, 2, 0.88)",
+            backdropFilter: "blur(28px) saturate(180%)",
+            WebkitBackdropFilter: "blur(28px) saturate(180%)",
+            border: "1px solid oklch(75 0.18 50 / 0.4)",
+            borderRadius: "16px",
+            boxShadow:
+              "0 0 48px oklch(75 0.18 50 / 0.1), 0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}
         >
           <DialogHeader>
@@ -1034,9 +1237,16 @@ function VacancyPanel({
                   key={r.id}
                   data-ocid={`audition.responses.item.${i + 1}`}
                   className="relative p-4 pr-16"
-                  style={{ border: "1px solid oklch(75 0.18 50 / 0.3)" }}
+                  style={{
+                    border: "1px solid oklch(75 0.18 50 / 0.2)",
+                    background: "rgba(255,255,255,0.03)",
+                    backdropFilter: "blur(8px)",
+                    borderRadius: "12px",
+                    boxShadow:
+                      "0 2px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
+                  }}
                 >
-                  {/* Delete button — top-right corner */}
+                  {/* Delete button */}
                   <div className="absolute top-3 right-3">
                     <GoldButton
                       small
@@ -1121,10 +1331,12 @@ function ApplicationForm({
   }
 
   const inputStyle = {
-    background: "#000",
+    background: "rgba(255,255,255,0.03)",
+    backdropFilter: "blur(8px)",
     borderColor: "oklch(75 0.18 50 / 0.4)",
     color: "oklch(85 0.05 50)",
     caretColor: "oklch(75 0.18 50)",
+    borderRadius: "8px",
   };
 
   return (
@@ -1160,7 +1372,18 @@ function ApplicationForm({
           <div className="h-px w-24 mx-auto gold-shimmer mt-4" />
         </div>
 
-        <div className="space-y-5">
+        <div
+          className="p-6 space-y-5"
+          style={{
+            background: "rgba(255,255,255,0.03)",
+            backdropFilter: "blur(20px) saturate(160%)",
+            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+            border: "1px solid oklch(75 0.18 50 / 0.15)",
+            borderRadius: "16px",
+            boxShadow:
+              "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
+          }}
+        >
           <div>
             <Label
               className="font-raleway text-xs tracking-widest uppercase mb-1 block"
@@ -1346,14 +1569,29 @@ function ConfirmationPage({ onDone }: { onDone: () => void }) {
 
         <div className="h-px w-24 gold-shimmer my-8" />
 
-        <p
-          className="font-raleway text-sm leading-relaxed italic max-w-md opacity-70"
-          style={{ color: "oklch(85 0.05 50)" }}
+        <div
+          className="px-8 py-6 max-w-md"
+          style={{
+            background: "rgba(255,255,255,0.03)",
+            backdropFilter: "blur(20px) saturate(160%)",
+            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+            border: "1px solid oklch(75 0.18 50 / 0.15)",
+            borderRadius: "16px",
+            boxShadow:
+              "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
+          }}
         >
-          Visit the creators panel and text one of the creators as
-          <br />
-          <em>( I have participated into Elysians hunt as / add your role )</em>
-        </p>
+          <p
+            className="font-raleway text-sm leading-relaxed italic opacity-70"
+            style={{ color: "oklch(85 0.05 50)" }}
+          >
+            Visit the creators panel and text one of the creators as
+            <br />
+            <em>
+              ( I have participated into Elysians hunt as / add your role )
+            </em>
+          </p>
+        </div>
 
         <div className="h-px w-32 gold-shimmer mt-10 mb-16" />
 

@@ -4,16 +4,9 @@ interface CinematicIntroProps {
   onComplete: () => void;
 }
 
-const RAY_CONFIGS = [
-  { key: "ray-0", i: 0 },
-  { key: "ray-1", i: 1 },
-  { key: "ray-2", i: 2 },
-  { key: "ray-3", i: 3 },
-];
-
 export function CinematicIntro({ onComplete }: CinematicIntroProps) {
-  const [phase, setPhase] = useState<"dark" | "fadein" | "hold" | "fadeout">(
-    "dark",
+  const [phase, setPhase] = useState<"black" | "slam" | "settle" | "shine">(
+    "black",
   );
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -24,10 +17,14 @@ export function CinematicIntro({ onComplete }: CinematicIntroProps) {
       refs.length = 0;
     };
 
-    const t1 = setTimeout(() => setPhase("fadein"), 600);
-    const t2 = setTimeout(() => setPhase("hold"), 2000);
-    const t3 = setTimeout(() => setPhase("fadeout"), 5500);
-    const t4 = setTimeout(() => onComplete(), 7000);
+    // HM slams in
+    const t1 = setTimeout(() => setPhase("slam"), 200);
+    // Flash fades, logo settles with gold glow
+    const t2 = setTimeout(() => setPhase("settle"), 800);
+    // Shine sweep
+    const t3 = setTimeout(() => setPhase("shine"), 1800);
+    // Instant cut — no fade
+    const t4 = setTimeout(() => onComplete(), 2800);
 
     refs.push(t1, t2, t3, t4);
     return clearAll;
@@ -39,194 +36,109 @@ export function CinematicIntro({ onComplete }: CinematicIntroProps) {
     onComplete();
   };
 
-  const titleClass =
-    phase === "fadein" || phase === "hold"
-      ? "hybe-title-fadein"
-      : phase === "fadeout"
-        ? "hybe-title-fadeout"
-        : "";
-
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden ${
-        phase === "fadeout" ? "intro-container" : ""
-      }`}
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
       style={{ background: "#000000" }}
     >
-      {/* Background image */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            "url('/assets/uploads/b3aaa2d30ad3c2aaa1deb260d2baadc9-1.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          zIndex: 1,
-        }}
-      />
-
-      {/* Cinematic top light beam */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "60%",
-          height: "70%",
-          background:
-            "radial-gradient(ellipse 50% 80% at 50% 0%, rgba(255,240,200,0.18) 0%, rgba(255,220,150,0.06) 40%, transparent 70%)",
-          zIndex: 2,
-        }}
-      />
-
-      {/* Cinematic side lights */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: "10%",
-          left: 0,
-          width: "50%",
-          height: "80%",
-          background:
-            "radial-gradient(ellipse 60% 70% at 0% 40%, rgba(255,220,160,0.10) 0%, transparent 65%)",
-          zIndex: 2,
-        }}
-      />
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: "10%",
-          right: 0,
-          width: "50%",
-          height: "80%",
-          background:
-            "radial-gradient(ellipse 60% 70% at 100% 40%, rgba(200,210,255,0.08) 0%, transparent 65%)",
-          zIndex: 2,
-        }}
-      />
-
-      {/* Mist layers */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ zIndex: 3 }}
-      >
-        <div
-          className="absolute"
-          style={{
-            inset: "-20%",
-            background:
-              "radial-gradient(ellipse 70% 50% at 30% 60%, rgba(255,255,255,0.03) 0%, transparent 70%)",
-            animation: "mistDrift1 8s ease-in-out infinite",
-          }}
-        />
-        <div
-          className="absolute"
-          style={{
-            inset: "-20%",
-            background:
-              "radial-gradient(ellipse 55% 45% at 70% 50%, rgba(255,255,255,0.025) 0%, transparent 65%)",
-            animation: "mistDrift2 12s ease-in-out infinite",
-          }}
-        />
-      </div>
-
-      {/* Atmospheric rays */}
-      {RAY_CONFIGS.map(({ key, i }) => (
-        <div
-          key={key}
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(ellipse ${32 + i * 10}% ${55 + i * 6}% at ${28 + i * 12}% 50%, rgba(200, 200, 220, 0.04) 0%, transparent 70%)`,
-            animation: `rayPulse ${3 + i * 0.8}s ease-in-out infinite`,
-            animationDelay: `${i * 0.6}s`,
-            zIndex: 4,
-          }}
-        />
-      ))}
-
-      {/* Noise grain */}
+      {/* Flash layer — fires on slam */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E\")",
-          backgroundSize: "200px 200px",
-          opacity: 0.15,
+          background:
+            "radial-gradient(ellipse 60% 40% at 50% 50%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 35%, transparent 70%)",
+          opacity: phase === "slam" ? 1 : 0,
+          transition: phase === "slam" ? "none" : "opacity 0.5s ease-out",
           zIndex: 5,
         }}
       />
 
-      {/* Vignette */}
+      {/* Secondary gold radiance */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.85) 100%)",
-          zIndex: 6,
+            "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(210,170,80,0.35) 0%, transparent 65%)",
+          opacity: phase === "settle" || phase === "shine" ? 1 : 0,
+          transition: "opacity 0.6s ease-out",
+          zIndex: 4,
         }}
       />
 
-      {/* Title */}
-      <div className="relative text-center select-none" style={{ zIndex: 10 }}>
-        {/* Soft glow behind text */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 90% 70% at 50% 50%, rgba(255,255,255,0.04) 0%, transparent 70%)",
-            filter: "blur(40px)",
-            transform: "scale(2.5)",
-          }}
-        />
-
-        <div className="relative">
-          {phase !== "dark" && (
-            <div className={`overflow-hidden mb-1 ${titleClass}`}>
-              <div className="h-px w-32 mx-auto gold-shimmer mb-4" />
-            </div>
-          )}
-
-          <div className="overflow-hidden">
-            <h1
-              className={`${
-                phase !== "dark" ? "hybe-title-reveal" : "opacity-0"
-              } ${phase === "fadeout" ? "hybe-title-fadeout" : ""}`}
+      {/* HM Logo */}
+      <div className="relative select-none" style={{ zIndex: 10 }}>
+        {/* Shine sweep overlay */}
+        {(phase === "settle" || phase === "shine") && (
+          <div
+            className="absolute inset-0 pointer-events-none overflow-hidden"
+            style={{ zIndex: 20 }}
+          >
+            <div
               style={{
-                fontSize: "clamp(3.8rem, 12vw, 11rem)",
-                lineHeight: 1.05,
-                fontFamily: "'Corben', cursive",
-                fontWeight: 700,
-                color: "#ffffff",
-                letterSpacing: "0.25em",
-                textShadow:
-                  "0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4), 0 0 100px rgba(255,255,255,0.2)",
+                position: "absolute",
+                top: 0,
+                left: "-120%",
+                width: "60%",
+                height: "100%",
+                background:
+                  "linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.55) 50%, transparent 80%)",
+                animation:
+                  phase === "shine"
+                    ? "hmShine 0.7s ease-in-out forwards"
+                    : "none",
               }}
-            >
-              HYBE MUSIC
-            </h1>
+            />
           </div>
+        )}
 
-          {phase !== "dark" && (
-            <div className={`overflow-hidden mt-2 ${titleClass}`}>
-              <div className="h-px w-48 mx-auto gold-shimmer" />
-              <p
-                style={{
-                  color: "rgba(255,255,255,0.85)",
-                  fontSize: "clamp(1.6rem, 4.5vw, 3rem)",
-                  marginTop: "0.5rem",
-                  fontFamily: "'Tangerine', cursive",
-                  fontWeight: 700,
-                  textShadow:
-                    "0 0 20px rgba(255,255,255,0.5), 0 0 50px rgba(255,255,255,0.2)",
-                }}
-              >
-                The elements era
-              </p>
-            </div>
-          )}
-        </div>
+        <h1
+          style={{
+            fontFamily: "'Stardos Stencil', cursive",
+            fontWeight: 900,
+            fontSize: "clamp(7rem, 28vw, 22rem)",
+            lineHeight: 1,
+            letterSpacing: "-0.02em",
+            color: phase === "slam" ? "#ffffff" : "oklch(75 0.18 50)",
+            textShadow:
+              phase === "slam"
+                ? "0 0 80px #fff, 0 0 160px rgba(255,255,255,0.8), 0 0 300px rgba(255,255,255,0.4)"
+                : phase === "settle" || phase === "shine"
+                  ? "0 0 30px oklch(75 0.18 50 / 0.9), 0 0 80px oklch(75 0.18 50 / 0.5), 0 0 160px oklch(75 0.18 50 / 0.25)"
+                  : "none",
+            transform:
+              phase === "black"
+                ? "scale(1.8)"
+                : phase === "slam"
+                  ? "scale(1.05)"
+                  : "scale(1)",
+            opacity: phase === "black" ? 0 : 1,
+            transition:
+              phase === "slam"
+                ? "transform 0.08s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.05s ease-out, color 0s, text-shadow 0s"
+                : "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), color 0.6s ease-out, text-shadow 0.6s ease-out",
+            position: "relative",
+          }}
+        >
+          HM
+        </h1>
+
+        {/* Subtitle — fades in during settle */}
+        <p
+          style={{
+            fontFamily: "'Tangerine', cursive",
+            fontWeight: 700,
+            fontSize: "clamp(1.4rem, 4vw, 2.8rem)",
+            textAlign: "center",
+            color: "rgba(255,255,255,0.85)",
+            letterSpacing: "0.08em",
+            marginTop: "0.5rem",
+            textShadow: "0 0 20px rgba(255,255,255,0.5)",
+            opacity: phase === "settle" || phase === "shine" ? 1 : 0,
+            transition: "opacity 0.8s ease-out 0.3s",
+          }}
+        >
+          The elements era
+        </p>
       </div>
 
       <button

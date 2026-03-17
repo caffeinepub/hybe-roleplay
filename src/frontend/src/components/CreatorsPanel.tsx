@@ -78,8 +78,17 @@ export function CreatorsPanel({ onBack }: CreatorsPanelProps) {
         />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 flex items-center gap-4 px-8 py-6">
+      {/* Header — glass mirror */}
+      <header
+        className="relative z-10 flex items-center gap-4 px-8 py-6"
+        style={{
+          background: "rgba(255, 255, 255, 0.04)",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          borderBottom: "1px solid oklch(75 0.18 50 / 0.12)",
+          borderRadius: "0 0 16px 16px",
+        }}
+      >
         <button
           type="button"
           data-ocid="creators.back_button"
@@ -152,7 +161,8 @@ export function CreatorsPanel({ onBack }: CreatorsPanelProps) {
                   width: 160,
                   height: 160,
                   borderRadius: "50%",
-                  background: "#000",
+                  background: "rgba(0,0,0,0.5)",
+                  backdropFilter: "blur(8px)",
                   border:
                     hoveredCard === i
                       ? "2px solid oklch(75 0.18 50 / 0.95)"
@@ -211,8 +221,19 @@ export function CreatorsPanel({ onBack }: CreatorsPanelProps) {
                 </div>
               </div>
 
-              {/* Name & role below circle */}
-              <div className="text-center">
+              {/* Name & role below circle — glass card */}
+              <div
+                className="text-center w-full px-3 py-3"
+                style={{
+                  background: "rgba(255, 255, 255, 0.03)",
+                  backdropFilter: "blur(12px) saturate(160%)",
+                  WebkitBackdropFilter: "blur(12px) saturate(160%)",
+                  border: "1px solid oklch(75 0.18 50 / 0.12)",
+                  borderRadius: "12px",
+                  boxShadow:
+                    "0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
+                }}
+              >
                 <p
                   className="font-cinzel font-bold tracking-wider"
                   style={{

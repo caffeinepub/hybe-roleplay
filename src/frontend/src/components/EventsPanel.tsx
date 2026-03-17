@@ -285,8 +285,17 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
         />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-5">
+      {/* Header — glass mirror */}
+      <header
+        className="relative z-10 flex items-center justify-between px-6 py-5"
+        style={{
+          background: "rgba(255, 255, 255, 0.04)",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          borderBottom: "1px solid oklch(75 0.18 50 / 0.12)",
+          borderRadius: "0 0 16px 16px",
+        }}
+      >
         <button
           type="button"
           data-ocid="events.button"
@@ -327,6 +336,9 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
             style={{
               color: "oklch(75 0.18 50)",
               border: "1px solid oklch(75 0.18 50 / 0.4)",
+              borderRadius: "8px",
+              background: "rgba(255,255,255,0.03)",
+              backdropFilter: "blur(8px)",
             }}
           >
             [ Admin ]
@@ -340,6 +352,7 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
               color: "oklch(75 0.18 50)",
               border: "1px solid oklch(75 0.18 50 / 0.6)",
               background: "oklch(75 0.18 50 / 0.08)",
+              borderRadius: "8px",
             }}
           >
             [ Exit Admin ]
@@ -350,10 +363,15 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
       {/* PIN input */}
       {showPinInput && (
         <div
-          className="relative z-20 mx-6 mb-2 p-4 flex flex-col gap-3"
+          className="relative z-20 mx-6 mb-2 mt-4 p-4 flex flex-col gap-3"
           style={{
             border: "1px solid oklch(75 0.18 50 / 0.3)",
-            background: "oklch(10 0.03 50 / 0.9)",
+            background: "rgba(255, 255, 255, 0.04)",
+            backdropFilter: "blur(20px) saturate(160%)",
+            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+            borderRadius: "12px",
+            boxShadow:
+              "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}
         >
           <p
@@ -375,6 +393,7 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
               style={{
                 color: "oklch(75 0.18 50)",
                 border: "1px solid oklch(75 0.18 50 / 0.4)",
+                borderRadius: "8px",
               }}
             />
             <button
@@ -382,7 +401,12 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
               data-ocid="events.confirm_button"
               onClick={handlePinSubmit}
               className="font-cinzel text-xs tracking-[0.2em] uppercase px-4 py-2 transition-all hover:opacity-80"
-              style={{ color: "#000", background: "oklch(75 0.18 50)" }}
+              style={{
+                color: "#000",
+                background: "oklch(75 0.18 50)",
+                borderRadius: "8px",
+                boxShadow: "0 0 12px oklch(75 0.18 50 / 0.4)",
+              }}
             >
               Enter
             </button>
@@ -401,13 +425,18 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
 
       {/* Admin add button */}
       {isAdmin && (
-        <div className="relative z-10 flex justify-center mb-2 px-6">
+        <div className="relative z-10 flex justify-center mb-2 mt-4 px-6">
           <button
             type="button"
             data-ocid="events.primary_button"
             onClick={openAddForm}
             className="flex items-center gap-2 font-cinzel text-sm tracking-[0.25em] uppercase px-6 py-2 transition-all hover:opacity-80"
-            style={{ color: "#000", background: "oklch(75 0.18 50)" }}
+            style={{
+              color: "#000",
+              background: "oklch(75 0.18 50)",
+              borderRadius: "10px",
+              boxShadow: "0 0 16px oklch(75 0.18 50 / 0.45)",
+            }}
           >
             <ImagePlus size={14} />
             Add Event
@@ -418,8 +447,15 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
       {/* Carousel */}
       <main className="relative z-10">
         <div
-          className="relative overflow-hidden"
-          style={{ height: "55vh", minHeight: "300px" }}
+          className="relative overflow-hidden mx-4 mt-4"
+          style={{
+            height: "55vh",
+            minHeight: "300px",
+            borderRadius: "16px",
+            border: "1px solid oklch(75 0.18 50 / 0.3)",
+            boxShadow:
+              "0 0 40px oklch(75 0.18 50 / 0.1), 0 8px 32px rgba(0,0,0,0.5)",
+          }}
         >
           {currentEvent && (
             <div
@@ -431,6 +467,7 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                 backgroundPosition: "center",
                 opacity: isTransitioning ? 0 : 1,
                 transition: "opacity 0.4s ease",
+                borderRadius: "16px",
               }}
             />
           )}
@@ -440,6 +477,7 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
               inset: 0,
               background:
                 "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.85) 100%)",
+              borderRadius: "16px",
             }}
           />
           <div
@@ -450,6 +488,7 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                 "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px)",
               pointerEvents: "none",
               opacity: 0.5,
+              borderRadius: "16px",
             }}
           />
 
@@ -499,7 +538,10 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
               style={{
                 padding: "0.35rem 1.2rem",
                 border: "1px solid oklch(75 0.18 50 / 0.7)",
-                background: "oklch(75 0.18 50 / 0.08)",
+                background: "rgba(255,255,255,0.06)",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
+                borderRadius: "20px",
               }}
             >
               <p
@@ -534,9 +576,11 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                 onClick={() => openEditForm(currentEvent)}
                 className="p-2 transition-all hover:opacity-80"
                 style={{
-                  background: "oklch(75 0.18 50 / 0.15)",
+                  background: "rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(8px)",
                   border: "1px solid oklch(75 0.18 50 / 0.5)",
                   color: "oklch(75 0.18 50)",
+                  borderRadius: "8px",
                 }}
               >
                 <Pencil size={12} />
@@ -548,8 +592,10 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                 className="p-2 transition-all hover:opacity-80"
                 style={{
                   background: "oklch(30 0.15 25 / 0.3)",
+                  backdropFilter: "blur(8px)",
                   border: "1px solid oklch(60 0.2 25 / 0.5)",
                   color: "oklch(70 0.18 25)",
+                  borderRadius: "8px",
                 }}
               >
                 <Trash2 size={12} />
@@ -591,6 +637,7 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                       i === currentIndex
                         ? "0 0 8px oklch(75 0.18 50 / 0.6)"
                         : "none",
+                    borderRadius: "4px",
                   }}
                 />
               ))}
@@ -601,11 +648,16 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
         {/* Description */}
         {currentEvent?.description && (
           <div
+            className="mx-4 mt-4"
             style={{
-              padding: "2rem 1.5rem",
-              borderTop: "1px solid oklch(75 0.18 50 / 0.2)",
-              background:
-                "linear-gradient(to bottom, oklch(5 0.03 50 / 0.8), #000)",
+              padding: "1.5rem",
+              borderRadius: "14px",
+              background: "rgba(255, 255, 255, 0.03)",
+              backdropFilter: "blur(20px) saturate(160%)",
+              WebkitBackdropFilter: "blur(20px) saturate(160%)",
+              border: "1px solid oklch(75 0.18 50 / 0.12)",
+              boxShadow:
+                "0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
               opacity: isTransitioning ? 0 : 1,
               transition: "opacity 0.4s ease",
             }}
@@ -641,14 +693,22 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
         <div
           data-ocid="events.modal"
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.92)" }}
+          style={{
+            background: "rgba(0,0,0,0.75)",
+            backdropFilter: "blur(8px)",
+          }}
         >
           <div
             className="w-full max-w-md p-6 flex flex-col gap-4 overflow-y-auto"
             style={{
-              background: "#0a0a0a",
-              border: "1px solid oklch(75 0.18 50 / 0.5)",
+              background: "rgba(10, 8, 4, 0.85)",
+              backdropFilter: "blur(24px) saturate(180%)",
+              WebkitBackdropFilter: "blur(24px) saturate(180%)",
+              border: "1px solid oklch(75 0.18 50 / 0.4)",
+              borderRadius: "16px",
               maxHeight: "90vh",
+              boxShadow:
+                "0 0 48px oklch(75 0.18 50 / 0.1), 0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)",
             }}
           >
             <div className="flex items-center justify-between mb-2">
@@ -662,8 +722,8 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                 type="button"
                 data-ocid="events.close_button"
                 onClick={() => setShowForm(false)}
-                className="transition-opacity hover:opacity-60"
-                style={{ color: "oklch(75 0.18 50)" }}
+                className="transition-opacity hover:opacity-60 p-1"
+                style={{ color: "oklch(75 0.18 50)", borderRadius: "6px" }}
               >
                 <X size={16} />
               </button>
@@ -687,6 +747,7 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                   minHeight: "90px",
                   background: "oklch(75 0.18 50 / 0.03)",
                   display: "flex",
+                  borderRadius: "10px",
                 }}
               >
                 {formImage ? (
@@ -694,6 +755,7 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                     src={formImage}
                     alt="preview"
                     className="w-full max-h-36 object-cover"
+                    style={{ borderRadius: "10px" }}
                   />
                 ) : (
                   <div className="flex flex-col items-center gap-2 py-4">
@@ -741,6 +803,8 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                 style={{
                   color: "oklch(90 0.05 50)",
                   border: "1px solid oklch(75 0.18 50 / 0.3)",
+                  borderRadius: "8px",
+                  background: "rgba(255,255,255,0.03)",
                 }}
               />
             </div>
@@ -765,6 +829,8 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                 style={{
                   color: "oklch(90 0.05 50)",
                   border: "1px solid oklch(75 0.18 50 / 0.3)",
+                  borderRadius: "8px",
+                  background: "rgba(255,255,255,0.03)",
                 }}
               />
             </div>
@@ -789,6 +855,8 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                 style={{
                   color: "oklch(90 0.05 50)",
                   border: "1px solid oklch(75 0.18 50 / 0.3)",
+                  borderRadius: "8px",
+                  background: "rgba(255,255,255,0.03)",
                 }}
               />
             </div>
@@ -802,6 +870,7 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                 style={{
                   color: "oklch(75 0.18 50)",
                   border: "1px solid oklch(75 0.18 50 / 0.3)",
+                  borderRadius: "8px",
                 }}
               >
                 Cancel
@@ -812,7 +881,12 @@ export function EventsPanel({ onBack }: { onBack: () => void }) {
                 onClick={handleSave}
                 disabled={!formTitle.trim()}
                 className="flex-1 font-cinzel text-xs tracking-[0.2em] uppercase py-3 transition-all hover:opacity-80 disabled:opacity-30"
-                style={{ color: "#000", background: "oklch(75 0.18 50)" }}
+                style={{
+                  color: "#000",
+                  background: "oklch(75 0.18 50)",
+                  borderRadius: "8px",
+                  boxShadow: "0 0 14px oklch(75 0.18 50 / 0.4)",
+                }}
               >
                 Save
               </button>
