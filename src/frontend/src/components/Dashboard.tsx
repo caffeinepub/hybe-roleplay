@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { AuditionFlow } from "./AuditionFlow";
-import { CarnivalPanel } from "./CarnivalPanel";
 import { CreatorsPanel } from "./CreatorsPanel";
 import { ElementsPanel } from "./ElementsPanel";
+import { EventsPanel } from "./EventsPanel";
 import { HighlightsPanel } from "./HighlightsPanel";
 
 type PanelId =
@@ -93,7 +93,7 @@ export function Dashboard({ visible }: { visible: boolean }) {
   }
 
   if (activePanel === "events") {
-    return <CarnivalPanel onComplete={() => setActivePanel(null)} />;
+    return <EventsPanel onBack={() => setActivePanel(null)} />;
   }
 
   if (activePanel === "highlights") {

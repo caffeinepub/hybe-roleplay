@@ -9,29 +9,7 @@ const RAY_CONFIGS = [
   { key: "ray-1", i: 1 },
   { key: "ray-2", i: 2 },
   { key: "ray-3", i: 3 },
-  { key: "ray-4", i: 4 },
-  { key: "ray-5", i: 5 },
 ];
-
-interface ParticleData {
-  id: string;
-  left: string;
-  top: string;
-  delay: string;
-  duration: string;
-  drift: string;
-  size: string;
-}
-
-const PARTICLES: ParticleData[] = Array.from({ length: 40 }, (_, i) => ({
-  id: `p${i}`,
-  left: `${(i * 2.5) % 100}%`,
-  top: `${60 + ((i * 0.75) % 30)}%`,
-  delay: `${(i * 0.075) % 3}s`,
-  duration: `${3 + ((i * 0.1) % 4)}s`,
-  drift: `${((i % 10) - 5) * 16}px`,
-  size: `${1 + (i % 3) * 0.5}px`,
-}));
 
 export function CinematicIntro({ onComplete }: CinematicIntroProps) {
   const [phase, setPhase] = useState<"dark" | "fadein" | "hold" | "fadeout">(
@@ -41,16 +19,15 @@ export function CinematicIntro({ onComplete }: CinematicIntroProps) {
 
   useEffect(() => {
     const refs = timeoutsRef.current;
-
     const clearAll = () => {
       refs.forEach(clearTimeout);
       refs.length = 0;
     };
 
-    const t1 = setTimeout(() => setPhase("fadein"), 300);
-    const t2 = setTimeout(() => setPhase("hold"), 1500);
-    const t3 = setTimeout(() => setPhase("fadeout"), 2000);
-    const t4 = setTimeout(() => onComplete(), 3000);
+    const t1 = setTimeout(() => setPhase("fadein"), 600);
+    const t2 = setTimeout(() => setPhase("hold"), 2000);
+    const t3 = setTimeout(() => setPhase("fadeout"), 5500);
+    const t4 = setTimeout(() => onComplete(), 7000);
 
     refs.push(t1, t2, t3, t4);
     return clearAll;
@@ -76,32 +53,84 @@ export function CinematicIntro({ onComplete }: CinematicIntroProps) {
       }`}
       style={{ background: "#000000" }}
     >
-      {/* Projector flash — brief white/gold burst at fadein start */}
-      {phase === "fadein" && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            animation: "projectorFlash 0.5s ease-out forwards",
-            zIndex: 20,
-          }}
-        />
-      )}
+      {/* Background image */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "url('/assets/uploads/b3aaa2d30ad3c2aaa1deb260d2baadc9-1.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          zIndex: 1,
+        }}
+      />
 
-      {/* Scan line sweeping top-to-bottom during fadein */}
-      {phase === "fadein" && (
+      {/* Cinematic top light beam */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "60%",
+          height: "70%",
+          background:
+            "radial-gradient(ellipse 50% 80% at 50% 0%, rgba(255,240,200,0.18) 0%, rgba(255,220,150,0.06) 40%, transparent 70%)",
+          zIndex: 2,
+        }}
+      />
+
+      {/* Cinematic side lights */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: "10%",
+          left: 0,
+          width: "50%",
+          height: "80%",
+          background:
+            "radial-gradient(ellipse 60% 70% at 0% 40%, rgba(255,220,160,0.10) 0%, transparent 65%)",
+          zIndex: 2,
+        }}
+      />
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: "10%",
+          right: 0,
+          width: "50%",
+          height: "80%",
+          background:
+            "radial-gradient(ellipse 60% 70% at 100% 40%, rgba(200,210,255,0.08) 0%, transparent 65%)",
+          zIndex: 2,
+        }}
+      />
+
+      {/* Mist layers */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ zIndex: 3 }}
+      >
         <div
-          className="absolute left-0 right-0 pointer-events-none"
+          className="absolute"
           style={{
-            height: "1px",
-            background: "oklch(75 0.18 50 / 0.45)",
-            boxShadow:
-              "0 0 8px oklch(75 0.18 50 / 0.6), 0 0 24px oklch(75 0.18 50 / 0.3)",
-            animation: "scanLine 1.2s ease-in forwards",
-            zIndex: 15,
-            top: 0,
+            inset: "-20%",
+            background:
+              "radial-gradient(ellipse 70% 50% at 30% 60%, rgba(255,255,255,0.03) 0%, transparent 70%)",
+            animation: "mistDrift1 8s ease-in-out infinite",
           }}
         />
-      )}
+        <div
+          className="absolute"
+          style={{
+            inset: "-20%",
+            background:
+              "radial-gradient(ellipse 55% 45% at 70% 50%, rgba(255,255,255,0.025) 0%, transparent 65%)",
+            animation: "mistDrift2 12s ease-in-out infinite",
+          }}
+        />
+      </div>
 
       {/* Atmospheric rays */}
       {RAY_CONFIGS.map(({ key, i }) => (
@@ -109,84 +138,70 @@ export function CinematicIntro({ onComplete }: CinematicIntroProps) {
           key={key}
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: `radial-gradient(ellipse ${30 + i * 8}% ${60 + i * 5}% at ${30 + i * 8}% 50%, oklch(75 0.18 50 / 0.06) 0%, transparent 70%)`,
-            animation: `rayPulse ${2 + i * 0.7}s ease-in-out infinite`,
-            animationDelay: `${i * 0.4}s`,
+            background: `radial-gradient(ellipse ${32 + i * 10}% ${55 + i * 6}% at ${28 + i * 12}% 50%, rgba(200, 200, 220, 0.04) 0%, transparent 70%)`,
+            animation: `rayPulse ${3 + i * 0.8}s ease-in-out infinite`,
+            animationDelay: `${i * 0.6}s`,
+            zIndex: 4,
           }}
         />
       ))}
 
       {/* Noise grain */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-30"
+        className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E\")",
           backgroundSize: "200px 200px",
+          opacity: 0.15,
+          zIndex: 5,
         }}
       />
-
-      {/* Particles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {PARTICLES.map((p) => (
-          <div
-            key={p.id}
-            className="absolute rounded-full bg-gold opacity-0"
-            style={{
-              left: p.left,
-              top: p.top,
-              width: p.size,
-              height: p.size,
-              animation: `particleDrift ${p.duration} ${p.delay} ease-in-out infinite`,
-              ["--drift" as string]: p.drift,
-            }}
-          />
-        ))}
-      </div>
 
       {/* Vignette */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,0.95) 100%)",
+            "radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.85) 100%)",
+          zIndex: 6,
         }}
       />
 
       {/* Title */}
-      <div className="relative z-10 text-center select-none">
+      <div className="relative text-center select-none" style={{ zIndex: 10 }}>
+        {/* Soft glow behind text */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 80% 60% at 50% 50%, oklch(75 0.18 50 / 0.12) 0%, transparent 70%)",
-            filter: "blur(30px)",
-            transform: "scale(2)",
+              "radial-gradient(ellipse 90% 70% at 50% 50%, rgba(255,255,255,0.04) 0%, transparent 70%)",
+            filter: "blur(40px)",
+            transform: "scale(2.5)",
           }}
         />
 
         <div className="relative">
           {phase !== "dark" && (
-            <div className={`overflow-hidden mb-3 ${titleClass}`}>
-              <div className="h-px w-32 mx-auto gold-shimmer mb-6" />
+            <div className={`overflow-hidden mb-1 ${titleClass}`}>
+              <div className="h-px w-32 mx-auto gold-shimmer mb-4" />
             </div>
           )}
 
-          {/* Clip-path letter reveal wrapper */}
-          <div
-            className="overflow-hidden"
-            style={{ display: phase !== "dark" ? "block" : "block" }}
-          >
+          <div className="overflow-hidden">
             <h1
-              className={`tracking-[0.25em] text-gold font-bold ${
+              className={`${
                 phase !== "dark" ? "hybe-title-reveal" : "opacity-0"
               } ${phase === "fadeout" ? "hybe-title-fadeout" : ""}`}
               style={{
-                fontSize: "clamp(2.5rem, 8vw, 7rem)",
-                lineHeight: 1.1,
-                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontSize: "clamp(3.8rem, 12vw, 11rem)",
+                lineHeight: 1.05,
+                fontFamily: "'Corben', cursive",
+                fontWeight: 700,
+                color: "#ffffff",
+                letterSpacing: "0.25em",
                 textShadow:
-                  "-2px 0 oklch(65 0.25 20 / 0.3), 2px 0 oklch(65 0.18 250 / 0.3), 0 0 40px oklch(75 0.18 50 / 0.6), 0 0 80px oklch(75 0.18 50 / 0.3)",
+                  "0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4), 0 0 100px rgba(255,255,255,0.2)",
               }}
             >
               HYBE MUSIC
@@ -194,11 +209,18 @@ export function CinematicIntro({ onComplete }: CinematicIntroProps) {
           </div>
 
           {phase !== "dark" && (
-            <div className={`overflow-hidden mt-6 ${titleClass}`}>
+            <div className={`overflow-hidden mt-2 ${titleClass}`}>
               <div className="h-px w-48 mx-auto gold-shimmer" />
               <p
-                className="font-raleway text-xs tracking-[0.5em] uppercase mt-4 opacity-60"
-                style={{ color: "oklch(75 0.18 50)" }}
+                style={{
+                  color: "rgba(255,255,255,0.85)",
+                  fontSize: "clamp(1.6rem, 4.5vw, 3rem)",
+                  marginTop: "0.5rem",
+                  fontFamily: "'Tangerine', cursive",
+                  fontWeight: 700,
+                  textShadow:
+                    "0 0 20px rgba(255,255,255,0.5), 0 0 50px rgba(255,255,255,0.2)",
+                }}
               >
                 The elements era
               </p>
@@ -211,8 +233,12 @@ export function CinematicIntro({ onComplete }: CinematicIntroProps) {
         type="button"
         data-ocid="intro.skip_button"
         onClick={handleSkip}
-        className="absolute bottom-8 right-8 font-raleway text-xs tracking-[0.3em] uppercase opacity-40 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
-        style={{ color: "oklch(75 0.18 50)" }}
+        className="absolute bottom-8 right-8 text-xs tracking-[0.3em] uppercase opacity-40 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+        style={{
+          color: "rgba(255,255,255,0.7)",
+          fontFamily: "'Raleway', sans-serif",
+          zIndex: 20,
+        }}
       >
         Skip ›
       </button>
