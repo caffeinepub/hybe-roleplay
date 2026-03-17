@@ -5,7 +5,6 @@ interface Creator {
   role: string;
   faceClaim: string;
   experience: number;
-  phone: string;
   whatsapp: string;
   initials: string;
 }
@@ -16,7 +15,6 @@ const CREATORS: Creator[] = [
     role: "Founder",
     faceClaim: "Park Jimin",
     experience: 6,
-    phone: "+91 8950686616",
     whatsapp: "918950686616",
     initials: "S",
   },
@@ -25,7 +23,6 @@ const CREATORS: Creator[] = [
     role: "Admin",
     faceClaim: "Jeon Jungkook",
     experience: 7,
-    phone: "+91 87669 16846",
     whatsapp: "918766916846",
     initials: "Y",
   },
@@ -34,7 +31,6 @@ const CREATORS: Creator[] = [
     role: "Admin",
     faceClaim: "Taehyung",
     experience: 6,
-    phone: "+91 99174 35656",
     whatsapp: "919917435656",
     initials: "A",
   },
@@ -43,7 +39,6 @@ const CREATORS: Creator[] = [
     role: "Admin",
     faceClaim: "Jung Hoseok",
     experience: 7,
-    phone: "+91 90987 44115",
     whatsapp: "919098744115",
     initials: "R",
   },
@@ -128,9 +123,9 @@ export function CreatorsPanel({ onBack }: CreatorsPanelProps) {
         <div className="h-px w-24 mx-auto mt-5 gold-shimmer" />
       </div>
 
-      {/* Profile Cards */}
+      {/* Profile Cards — circular */}
       <main
-        className="relative z-10 flex flex-wrap justify-center gap-6 px-6 pb-16"
+        className="relative z-10 flex flex-wrap justify-center gap-10 px-6 pb-16"
         data-ocid="creators.list"
       >
         {CREATORS.map((creator, i) => (
@@ -141,137 +136,94 @@ export function CreatorsPanel({ onBack }: CreatorsPanelProps) {
             onClick={() => handleProfileClick(creator.whatsapp)}
             onMouseEnter={() => setHoveredCard(i)}
             onMouseLeave={() => setHoveredCard(null)}
-            className="focus:outline-none"
-            style={{ width: "clamp(260px, 40vw, 320px)" }}
+            className="focus:outline-none flex flex-col items-center gap-4"
+            style={{ width: 180 }}
           >
+            {/* Circle card */}
             <div
               style={{
-                background:
-                  hoveredCard === i
-                    ? "oklch(8 0.02 50 / 0.95)"
-                    : "oklch(5 0.01 50 / 0.9)",
+                width: 160,
+                height: 160,
+                borderRadius: "50%",
+                background: "#000",
                 border:
                   hoveredCard === i
-                    ? "1px solid oklch(75 0.18 50 / 0.8)"
-                    : "1px solid oklch(75 0.18 50 / 0.35)",
+                    ? "2px solid oklch(75 0.18 50 / 0.95)"
+                    : "2px solid oklch(75 0.18 50 / 0.45)",
                 boxShadow:
                   hoveredCard === i
-                    ? "0 0 24px oklch(75 0.18 50 / 0.2), inset 0 0 20px oklch(75 0.18 50 / 0.04)"
-                    : "none",
-                transition: "all 0.3s ease",
-                padding: "28px 24px 24px",
+                    ? "0 0 32px oklch(75 0.18 50 / 0.55), 0 0 64px oklch(75 0.18 50 / 0.2), inset 0 0 24px oklch(75 0.18 50 / 0.06)"
+                    : "0 0 18px oklch(75 0.18 50 / 0.25), inset 0 0 12px oklch(75 0.18 50 / 0.03)",
+                transition: "all 0.35s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 cursor: "pointer",
-                textAlign: "left",
+                flexDirection: "column",
+                gap: 4,
               }}
             >
-              {/* Avatar */}
-              <div className="flex items-start gap-4 mb-5">
-                <div
-                  className="flex items-center justify-center font-cinzel font-bold shrink-0"
-                  style={{
-                    width: 56,
-                    height: 56,
-                    background: "oklch(10 0.04 50)",
-                    border: "1.5px solid oklch(75 0.18 50 / 0.6)",
-                    fontSize: "1.4rem",
-                    color: "oklch(75 0.18 50)",
-                    textShadow: "0 0 12px oklch(75 0.18 50 / 0.5)",
-                  }}
-                >
-                  {creator.initials}
-                </div>
-                <div className="flex-1 pt-1">
-                  <h2
-                    className="font-cinzel font-bold tracking-wider"
-                    style={{
-                      fontSize: "1rem",
-                      color: "oklch(92 0.01 285)",
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {creator.name}
-                  </h2>
-                  <span
-                    className="font-cinzel text-xs tracking-[0.35em] uppercase mt-1 inline-block"
-                    style={{
-                      color:
-                        creator.role === "Founder"
-                          ? "oklch(80 0.18 50)"
-                          : "oklch(65 0.13 50 / 0.85)",
-                    }}
-                  >
-                    {creator.role}
-                  </span>
-                </div>
-              </div>
-
-              {/* Divider */}
-              <div
-                className="h-px w-full mb-4"
-                style={{ background: "oklch(75 0.18 50 / 0.15)" }}
-              />
-
-              {/* Details */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span
-                    className="font-raleway text-xs tracking-[0.2em] uppercase"
-                    style={{ color: "oklch(75 0.18 50 / 0.5)" }}
-                  >
-                    Face Claim
-                  </span>
-                  <span
-                    className="font-raleway text-xs tracking-wide"
-                    style={{ color: "oklch(85 0.05 285 / 0.9)" }}
-                  >
-                    {creator.faceClaim}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span
-                    className="font-raleway text-xs tracking-[0.2em] uppercase"
-                    style={{ color: "oklch(75 0.18 50 / 0.5)" }}
-                  >
-                    Experience
-                  </span>
-                  <span
-                    className="font-raleway text-xs tracking-wide"
-                    style={{ color: "oklch(85 0.05 285 / 0.9)" }}
-                  >
-                    {creator.experience} years
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span
-                    className="font-raleway text-xs tracking-[0.2em] uppercase"
-                    style={{ color: "oklch(75 0.18 50 / 0.5)" }}
-                  >
-                    WhatsApp
-                  </span>
-                  <span
-                    className="font-raleway text-xs tracking-wide"
-                    style={{ color: "oklch(75 0.18 50 / 0.9)" }}
-                  >
-                    {creator.phone}
-                  </span>
-                </div>
-              </div>
-
-              {/* CTA hint */}
-              <div
-                className="mt-5 flex items-center justify-center gap-2"
+              {/* Initials */}
+              <span
+                className="font-cinzel font-bold"
                 style={{
-                  opacity: hoveredCard === i ? 1 : 0,
-                  transition: "opacity 0.3s ease",
+                  fontSize: "2.2rem",
+                  color: "oklch(75 0.18 50)",
+                  textShadow: "0 0 16px oklch(75 0.18 50 / 0.6)",
+                  lineHeight: 1,
                 }}
               >
-                <span
-                  className="font-cinzel text-xs tracking-[0.3em] uppercase"
-                  style={{ color: "oklch(75 0.18 50 / 0.7)" }}
-                >
-                  Open WhatsApp ›
-                </span>
-              </div>
+                {creator.initials}
+              </span>
+              {/* WhatsApp hint on hover */}
+              <span
+                className="font-cinzel text-xs tracking-[0.25em] uppercase"
+                style={{
+                  color: "oklch(75 0.18 50 / 0.7)",
+                  opacity: hoveredCard === i ? 1 : 0,
+                  transition: "opacity 0.3s ease",
+                  fontSize: "0.55rem",
+                }}
+              >
+                tap to chat
+              </span>
+            </div>
+
+            {/* Name & role below circle */}
+            <div className="text-center">
+              <p
+                className="font-cinzel font-bold tracking-wider"
+                style={{
+                  fontSize: "0.85rem",
+                  color: "oklch(92 0.01 285)",
+                  lineHeight: 1.3,
+                }}
+              >
+                {creator.name}
+              </p>
+              <p
+                className="font-cinzel text-xs tracking-[0.3em] uppercase mt-1"
+                style={{
+                  color:
+                    creator.role === "Founder"
+                      ? "oklch(80 0.18 50)"
+                      : "oklch(65 0.13 50 / 0.85)",
+                }}
+              >
+                {creator.role}
+              </p>
+              <p
+                className="font-raleway text-xs mt-2"
+                style={{ color: "oklch(70 0.04 285 / 0.7)" }}
+              >
+                {creator.faceClaim}
+              </p>
+              <p
+                className="font-raleway text-xs mt-1"
+                style={{ color: "oklch(65 0.1 50 / 0.6)" }}
+              >
+                {creator.experience} yrs exp
+              </p>
             </div>
           </button>
         ))}

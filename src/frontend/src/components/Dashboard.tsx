@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { AuditionFlow } from "./AuditionFlow";
+import { CarnivalPanel } from "./CarnivalPanel";
 import { CreatorsPanel } from "./CreatorsPanel";
-import { PanelView } from "./PanelView";
+import { ElementsPanel } from "./ElementsPanel";
 
 type PanelId = "creators" | "inventory" | "elements" | "events";
 
@@ -62,15 +63,12 @@ export function Dashboard({ visible }: { visible: boolean }) {
     return <CreatorsPanel onBack={() => setActivePanel(null)} />;
   }
 
-  if (activePanel) {
-    const panel = PANELS.find((p) => p.id === activePanel)!;
-    return (
-      <PanelView
-        label={panel.label}
-        icon={panel.icon}
-        onBack={() => setActivePanel(null)}
-      />
-    );
+  if (activePanel === "elements") {
+    return <ElementsPanel onBack={() => setActivePanel(null)} />;
+  }
+
+  if (activePanel === "events") {
+    return <CarnivalPanel onComplete={() => setActivePanel(null)} />;
   }
 
   return (

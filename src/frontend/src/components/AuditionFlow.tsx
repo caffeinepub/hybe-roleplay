@@ -6,15 +6,22 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 
 type Step = "rules" | "vacancy" | "form" | "confirmation";
+
+interface VacancyItem {
+  id: string;
+  group: string;
+  member: string;
+  taken: boolean;
+}
 
 interface Vacancy {
   id: string;
   title: string;
   description: string;
+  vacancyId?: string;
 }
 
 interface Response {
@@ -28,17 +35,99 @@ interface Response {
   submittedAt: string;
 }
 
-function getVacancies(): Vacancy[] {
+const DEFAULT_VACANCY_GROUPS = [
+  { group: "TXT", members: ["Taehyun", "Hyuka", "Soobin"] },
+  { group: "LE SSERAFIM", members: ["Sakura", "Kazuha", "Eunchae"] },
+  {
+    group: "STRAYKIDS",
+    members: [
+      "Bang Chan",
+      "Lee Know",
+      "Changbin",
+      "Han",
+      "Felix",
+      "Seungmin",
+      "Jeongin",
+    ],
+  },
+  { group: "ENHYPEN", members: ["Jungwon", "Sunoo"] },
+  { group: "ITZY", members: ["Yeji", "Lia", "Chaeryeong", "Yuna"] },
+  {
+    group: "SEVENTEEN",
+    members: [
+      "Jeonghan",
+      "Joshua",
+      "Jun",
+      "Hoshi",
+      "Wonwoo",
+      "Woozi",
+      "Mingyu",
+      "The8",
+      "Seungkwan",
+      "Vernon",
+      "Dino",
+    ],
+  },
+  {
+    group: "TWICE",
+    members: [
+      "Nayeon",
+      "Jeongyeon",
+      "Sana",
+      "Jihyo",
+      "Mina",
+      "Dahyun",
+      "Chaeyoung",
+      "Tzuyu",
+    ],
+  },
+  {
+    group: "KATSEYE",
+    members: ["Sophia", "Lara", "Megan", "Daniela", "Manon"],
+  },
+  { group: "CORTIS", members: ["Keonho", "Martin", "James"] },
+  {
+    group: "ATEEZ",
+    members: ["Seonghwa", "Yunho", "Yeosang", "Hongjoong", "Jongho"],
+  },
+  {
+    group: "BABYMONSTER",
+    members: ["Ruka", "Pharita", "Ahyeon", "Rami", "Rora"],
+  },
+  {
+    group: "NMIXX",
+    members: ["Lily", "Haewon", "Sullyoon", "Jiwoo", "Kyujin"],
+  },
+];
+
+function initVacancies(): VacancyItem[] {
   try {
-    const raw = localStorage.getItem("hybe_vacancies");
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+    const raw = localStorage.getItem("hybe_vacancies_v2");
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  const defaults: VacancyItem[] = DEFAULT_VACANCY_GROUPS.flatMap(
+    ({ group, members }) =>
+      members.map((member) => ({
+        id: `${group}-${member}`.toLowerCase().replace(/\s+/g, "-"),
+        group,
+        member,
+        taken: false,
+      })),
+  );
+  localStorage.setItem("hybe_vacancies_v2", JSON.stringify(defaults));
+  return defaults;
 }
 
-function saveVacancies(vacancies: Vacancy[]) {
-  localStorage.setItem("hybe_vacancies", JSON.stringify(vacancies));
+function saveVacancyItems(items: VacancyItem[]) {
+  localStorage.setItem("hybe_vacancies_v2", JSON.stringify(items));
+}
+
+function markVacancyTaken(vacancyId: string) {
+  const items = initVacancies();
+  const updated = items.map((v) =>
+    v.id === vacancyId ? { ...v, taken: true } : v,
+  );
+  saveVacancyItems(updated);
 }
 
 function getResponses(): Response[] {
@@ -98,12 +187,16 @@ function GoldButton({
   ocid,
   type = "button",
   disabled,
+  small,
+  danger,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   ocid?: string;
   type?: "button" | "submit";
   disabled?: boolean;
+  small?: boolean;
+  danger?: boolean;
 }) {
   return (
     <button
@@ -111,17 +204,20 @@ function GoldButton({
       data-ocid={ocid}
       onClick={onClick}
       disabled={disabled}
-      className="font-cinzel tracking-[0.3em] uppercase text-sm px-8 py-3 transition-all duration-300 disabled:opacity-40"
+      className={`font-cinzel tracking-[0.2em] uppercase transition-all duration-300 disabled:opacity-40 ${small ? "text-xs px-4 py-1.5" : "text-sm px-8 py-3"}`}
       style={{
         background: "#000",
-        border: "1px solid oklch(75 0.18 50 / 0.7)",
-        color: "oklch(75 0.18 50)",
+        border: danger
+          ? "1px solid oklch(55 0.22 25 / 0.7)"
+          : "1px solid oklch(75 0.18 50 / 0.7)",
+        color: danger ? "oklch(65 0.22 25)" : "oklch(75 0.18 50)",
         cursor: disabled ? "not-allowed" : "pointer",
       }}
       onMouseEnter={(e) => {
         if (!disabled)
-          (e.currentTarget as HTMLButtonElement).style.boxShadow =
-            "0 0 20px oklch(75 0.18 50 / 0.4), 0 0 40px oklch(75 0.18 50 / 0.15)";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = danger
+            ? "0 0 20px oklch(55 0.22 25 / 0.4), 0 0 40px oklch(55 0.22 25 / 0.15)"
+            : "0 0 20px oklch(75 0.18 50 / 0.4), 0 0 40px oklch(75 0.18 50 / 0.15)";
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
@@ -213,7 +309,6 @@ function RulesOverlay({ onNext }: { onNext: () => void }) {
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,0.95)" }}
     >
-      {/* Gold border frame */}
       <div
         className="relative w-full max-w-2xl max-h-[90vh] flex flex-col"
         style={{
@@ -221,7 +316,6 @@ function RulesOverlay({ onNext }: { onNext: () => void }) {
           background: "#000",
         }}
       >
-        {/* Corner accents */}
         {[
           "top-0 left-0",
           "top-0 right-0",
@@ -245,9 +339,7 @@ function RulesOverlay({ onNext }: { onNext: () => void }) {
           />
         ))}
 
-        {/* Scrollable content */}
         <div className="overflow-y-auto flex-1 px-6 pt-8 pb-4">
-          {/* Header */}
           <div className="text-center mb-6">
             <p
               className="font-cinzel text-xl font-bold tracking-[0.3em] mb-3"
@@ -266,7 +358,6 @@ function RulesOverlay({ onNext }: { onNext: () => void }) {
             </p>
           </div>
 
-          {/* Decorative dots */}
           <div
             className="text-center mb-6 tracking-[1em] opacity-40"
             style={{ color: "oklch(75 0.18 50)" }}
@@ -274,7 +365,6 @@ function RulesOverlay({ onNext }: { onNext: () => void }) {
             . . . . .
           </div>
 
-          {/* Rules */}
           <ol className="space-y-5">
             {rules.map((rule) => (
               <li key={rule.num} className="flex gap-4 items-start">
@@ -302,7 +392,6 @@ function RulesOverlay({ onNext }: { onNext: () => void }) {
           <div className="h-px w-24 mx-auto gold-shimmer mt-8" />
         </div>
 
-        {/* Footer */}
         <div
           className="px-6 py-5 text-center border-t"
           style={{ borderColor: "oklch(75 0.18 50 / 0.2)" }}
@@ -321,18 +410,39 @@ function VacancyPanel({
   onBack,
   onSelectVacancy,
 }: { onBack: () => void; onSelectVacancy: (v: Vacancy) => void }) {
-  const [vacancies, setVacancies] = useState<Vacancy[]>(getVacancies);
+  const [vacancyItems, setVacancyItems] =
+    useState<VacancyItem[]>(initVacancies);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState("");
-  const [newTitle, setNewTitle] = useState("");
-  const [newDesc, setNewDesc] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editDesc, setEditDesc] = useState("");
   const [showResponses, setShowResponses] = useState(false);
   const [responses, setResponses] = useState<Response[]>([]);
+  // Admin custom vacancy
+  const [newTitle, setNewTitle] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  // Optional desired role
+  const [desiredName, setDesiredName] = useState("");
+  const [desiredCategory, setDesiredCategory] = useState("");
+  const [desiredBandName, setDesiredBandName] = useState("");
+
+  const availableItems = vacancyItems.filter((v) => !v.taken);
+  const takenItems = vacancyItems.filter((v) => v.taken);
+
+  // Group available items by group
+  const groupedAvailable: Record<string, VacancyItem[]> = {};
+  for (const item of availableItems) {
+    if (!groupedAvailable[item.group]) groupedAvailable[item.group] = [];
+    groupedAvailable[item.group].push(item);
+  }
+
+  // Check if desired name is already taken in responses
+  const allResponses = getResponses();
+  const desiredNameTaken =
+    desiredName.trim().length > 0 &&
+    allResponses.some(
+      (r) => r.vacancyTitle.toLowerCase() === desiredName.trim().toLowerCase(),
+    );
 
   function submitPin() {
     if (pin === "hybe2024") {
@@ -345,44 +455,85 @@ function VacancyPanel({
     }
   }
 
-  function addVacancy() {
+  function restoreVacancy(id: string) {
+    const updated = vacancyItems.map((v) =>
+      v.id === id ? { ...v, taken: false } : v,
+    );
+    setVacancyItems(updated);
+    saveVacancyItems(updated);
+  }
+
+  function removeAvailableVacancy(id: string) {
+    // Mark as taken (remove from available) via admin action
+    const updated = vacancyItems.map((v) =>
+      v.id === id ? { ...v, taken: true } : v,
+    );
+    setVacancyItems(updated);
+    saveVacancyItems(updated);
+  }
+
+  function addCustomVacancy() {
     if (!newTitle.trim()) return;
-    const v: Vacancy = {
-      id: Date.now().toString(),
-      title: newTitle.trim(),
-      description: newDesc.trim(),
+    // Add as a custom VacancyItem
+    const newItem: VacancyItem = {
+      id: `custom-${Date.now()}`,
+      group: "Custom",
+      member: newTitle.trim(),
+      taken: false,
     };
-    const updated = [...vacancies, v];
-    setVacancies(updated);
-    saveVacancies(updated);
+    const updated = [...vacancyItems, newItem];
+    setVacancyItems(updated);
+    saveVacancyItems(updated);
     setNewTitle("");
     setNewDesc("");
-  }
-
-  function deleteVacancy(id: string) {
-    const updated = vacancies.filter((v) => v.id !== id);
-    setVacancies(updated);
-    saveVacancies(updated);
-  }
-
-  function startEdit(v: Vacancy) {
-    setEditingId(v.id);
-    setEditTitle(v.title);
-    setEditDesc(v.description);
-  }
-
-  function saveEdit(id: string) {
-    const updated = vacancies.map((v) =>
-      v.id === id ? { ...v, title: editTitle, description: editDesc } : v,
-    );
-    setVacancies(updated);
-    saveVacancies(updated);
-    setEditingId(null);
   }
 
   function openResponses() {
     setResponses(getResponses());
     setShowResponses(true);
+  }
+
+  function deleteResponse(responseId: string) {
+    // Find the response to get the vacancyTitle
+    const allResp = getResponses();
+    const target = allResp.find((r) => r.id === responseId);
+
+    // Remove response from localStorage
+    const updated = allResp.filter((r) => r.id !== responseId);
+    localStorage.setItem("hybe_responses", JSON.stringify(updated));
+
+    // Restore vacancy if we can find a match
+    if (target) {
+      const titleLower = target.vacancyTitle.toLowerCase();
+      const matchedItem = vacancyItems.find((item) => {
+        const itemTitle = `${item.group} · ${item.member}`.toLowerCase();
+        return itemTitle === titleLower;
+      });
+      if (matchedItem) {
+        const updatedVacancies = vacancyItems.map((v) =>
+          v.id === matchedItem.id ? { ...v, taken: false } : v,
+        );
+        setVacancyItems(updatedVacancies);
+        saveVacancyItems(updatedVacancies);
+      }
+    }
+
+    // Update responses state
+    setResponses(updated);
+  }
+
+  function proceedWithDesiredRole() {
+    if (!desiredName.trim() || !desiredCategory) return;
+    if (desiredCategory === "Band / Name" && !desiredBandName.trim()) return;
+    const title =
+      desiredCategory === "Band / Name" && desiredBandName.trim()
+        ? `${desiredBandName.trim()} · ${desiredName.trim()}`
+        : desiredName.trim();
+    onSelectVacancy({
+      id: `custom-${Date.now()}`,
+      title,
+      description: desiredCategory,
+    });
   }
 
   const goldInput =
@@ -393,6 +544,16 @@ function VacancyPanel({
     background: "#000",
     caretColor: "oklch(75 0.18 50)",
   };
+
+  const groupOrder = DEFAULT_VACANCY_GROUPS.map((g) => g.group);
+  const sortedGroups = Object.keys(groupedAvailable).sort((a, b) => {
+    const ai = groupOrder.indexOf(a);
+    const bi = groupOrder.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
 
   return (
     <div
@@ -411,192 +572,383 @@ function VacancyPanel({
         >
           ‹ Back
         </button>
-
-        {/* Title row with Admin button top-right */}
-        <div className="relative text-center mb-8">
-          <h1
-            className="font-cinzel font-bold tracking-[0.4em] uppercase text-3xl"
-            style={{ color: "oklch(75 0.18 50)" }}
-          >
-            VACANCY
-          </h1>
-          <div className="h-px w-24 mx-auto gold-shimmer mt-4" />
-          {/* Admin button positioned top-right of the title area */}
-          {!isAdmin && (
+        {/* Admin button row - completely above the title */}
+        {!isAdmin && (
+          <div className="flex justify-end mb-4">
             <button
               type="button"
               data-ocid="audition.admin_button"
               onClick={() => setShowPinModal(true)}
-              className="absolute top-0 right-0 font-cinzel text-xs tracking-[0.3em] uppercase opacity-20 hover:opacity-60 transition-opacity"
+              className="font-cinzel text-xs tracking-[0.3em] uppercase opacity-20 hover:opacity-60 transition-opacity"
               style={{ color: "oklch(75 0.18 50)" }}
             >
               [ Admin ]
             </button>
-          )}
-        </div>
-
-        {/* Vacancy Cards */}
-        {vacancies.length === 0 ? (
-          <div
-            data-ocid="audition.vacancy.empty_state"
-            className="text-center py-16"
-          >
-            <p
-              className="font-raleway text-sm tracking-widest opacity-40"
-              style={{ color: "oklch(75 0.18 50)" }}
-            >
-              No vacancies available at the moment
-            </p>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {vacancies.map((v, i) => (
-              <div key={v.id}>
-                {isAdmin && editingId === v.id ? (
-                  <div
-                    style={{
-                      border: "1px solid oklch(75 0.18 50 / 0.5)",
-                      padding: "16px",
-                      background: "#000",
-                    }}
-                  >
-                    <input
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      className={goldInput}
-                      style={goldInputStyle}
-                      placeholder="Title"
-                    />
-                    <textarea
-                      value={editDesc}
-                      onChange={(e) => setEditDesc(e.target.value)}
-                      className={`${goldInput} mt-2 resize-none`}
-                      style={goldInputStyle}
-                      rows={2}
-                      placeholder="Description"
-                    />
-                    <div className="flex gap-2 mt-3">
-                      <GoldButton onClick={() => saveEdit(v.id)}>
-                        Save
-                      </GoldButton>
-                      <GoldButton onClick={() => setEditingId(null)}>
-                        Cancel
-                      </GoldButton>
+        )}
+        {/* Title */}
+        <div className="text-center mb-8">
+          <h1
+            className="font-cinzel font-bold tracking-[0.4em] uppercase text-3xl"
+            style={{ color: "oklch(75 0.18 50)" }}
+          >
+            VACANCIES
+          </h1>
+          <p
+            className="font-cinzel text-xs tracking-[0.3em] uppercase mt-2 opacity-50"
+            style={{ color: "oklch(75 0.18 50)" }}
+          >
+            Hybe Music
+          </p>
+          <div className="h-px w-24 mx-auto gold-shimmer mt-4" />
+        </div>
+        {/* ── USER VIEW ── */}
+        {!isAdmin && (
+          <>
+            {sortedGroups.length === 0 ? (
+              <div
+                data-ocid="audition.vacancy.empty_state"
+                className="text-center py-16"
+              >
+                <p
+                  className="font-raleway text-sm tracking-widest opacity-40"
+                  style={{ color: "oklch(75 0.18 50)" }}
+                >
+                  No vacancies available at the moment
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {sortedGroups.map((group) => (
+                  <div key={group}>
+                    {/* Group header */}
+                    <div
+                      className="pt-5 pb-2"
+                      style={{
+                        borderTop: "1px solid oklch(75 0.18 50 / 0.15)",
+                      }}
+                    >
+                      <p
+                        className="font-cinzel text-xs font-bold tracking-[0.35em] uppercase"
+                        style={{ color: "oklch(75 0.18 50)" }}
+                      >
+                        {group}
+                      </p>
                     </div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    data-ocid={`audition.vacancy.item.${i + 1}`}
-                    onClick={() => !isAdmin && onSelectVacancy(v)}
-                    className="w-full text-left px-6 py-5 transition-all duration-300 group"
-                    style={{
-                      border: "1px solid oklch(75 0.18 50 / 0.4)",
-                      background: "#000",
-                      cursor: isAdmin ? "default" : "pointer",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isAdmin)
-                        (e.currentTarget as HTMLButtonElement).style.boxShadow =
-                          "0 0 20px oklch(75 0.18 50 / 0.25)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.boxShadow =
-                        "none";
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p
-                          className="font-cinzel font-bold tracking-[0.2em] uppercase"
-                          style={{ color: "oklch(75 0.18 50)" }}
-                        >
-                          {v.title}
-                        </p>
-                        {v.description && (
-                          <p
-                            className="font-raleway text-xs mt-1 opacity-60"
-                            style={{ color: "oklch(85 0.05 50)" }}
-                          >
-                            {v.description}
-                          </p>
-                        )}
-                      </div>
-                      {isAdmin ? (
-                        <div className="flex gap-2 ml-4">
-                          <GoldButton onClick={() => startEdit(v)}>
-                            Edit
-                          </GoldButton>
-                          <GoldButton onClick={() => deleteVacancy(v.id)}>
-                            ✕
-                          </GoldButton>
-                        </div>
-                      ) : (
+                    {/* Member rows */}
+                    {groupedAvailable[group].map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className="w-full flex items-center justify-between px-3 py-2.5 group transition-all duration-200"
+                        style={{ background: "transparent" }}
+                        onClick={() =>
+                          onSelectVacancy({
+                            id: Date.now().toString(),
+                            title: `${item.group} · ${item.member}`,
+                            description: "",
+                            vacancyId: item.id,
+                          })
+                        }
+                        onMouseEnter={(e) => {
+                          (
+                            e.currentTarget as HTMLButtonElement
+                          ).style.background = "oklch(75 0.18 50 / 0.05)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (
+                            e.currentTarget as HTMLButtonElement
+                          ).style.background = "transparent";
+                        }}
+                      >
                         <span
-                          className="opacity-40 group-hover:opacity-100 transition-opacity"
+                          className="font-raleway text-sm tracking-wide"
+                          style={{ color: "oklch(80 0.09 50)" }}
+                        >
+                          {item.member}
+                        </span>
+                        <span
+                          className="opacity-30 group-hover:opacity-80 transition-opacity text-lg"
                           style={{ color: "oklch(75 0.18 50)" }}
                         >
                           ›
                         </span>
-                      )}
-                    </div>
-                  </button>
+                      </button>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Optional desired role section */}
+            <div
+              className="mt-10 pt-8"
+              style={{ borderTop: "1px dotted oklch(75 0.18 50 / 0.3)" }}
+            >
+              <p
+                className="font-cinzel text-xs tracking-[0.35em] uppercase mb-1"
+                style={{ color: "oklch(75 0.18 50 / 0.7)" }}
+              >
+                Optional
+              </p>
+              <p
+                className="font-raleway text-xs mb-5 opacity-50"
+                style={{ color: "oklch(85 0.05 50)" }}
+              >
+                Can't find your desired role? Enter it below.
+              </p>
+
+              <div className="relative mb-4">
+                <input
+                  data-ocid="audition.desired_role.input"
+                  value={desiredName}
+                  onChange={(e) => setDesiredName(e.target.value)}
+                  placeholder="Enter role name..."
+                  className={goldInput}
+                  style={goldInputStyle}
+                />
+                {desiredNameTaken && (
+                  <span
+                    className="absolute right-3 top-1/2 -translate-y-1/2 font-cinzel text-xs tracking-widest uppercase"
+                    style={{ color: "oklch(55 0.22 25)" }}
+                  >
+                    Already Taken
+                  </span>
                 )}
               </div>
-            ))}
-          </div>
-        )}
 
-        {/* Admin Controls */}
-        {isAdmin && (
-          <div
-            className="mt-8 p-6"
-            style={{
-              border: "1px solid oklch(75 0.18 50 / 0.3)",
-              background: "oklch(75 0.18 50 / 0.03)",
-            }}
-          >
-            <p
-              className="font-cinzel text-xs tracking-[0.3em] uppercase mb-4"
-              style={{ color: "oklch(75 0.18 50)" }}
-            >
-              Add Vacancy
-            </p>
-            <input
-              data-ocid="audition.add_vacancy.input"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              className={goldInput}
-              style={goldInputStyle}
-              placeholder="Vacancy title"
-            />
-            <textarea
-              value={newDesc}
-              onChange={(e) => setNewDesc(e.target.value)}
-              className={`${goldInput} mt-2 resize-none`}
-              style={goldInputStyle}
-              rows={2}
-              placeholder="Description (optional)"
-            />
-            <div className="flex flex-wrap gap-3 mt-4">
+              {/* Category pills */}
+              <div className="flex flex-wrap gap-2 mb-5">
+                {["Band / Name", "Soloist", "Actor"].map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => {
+                      setDesiredCategory(cat);
+                      if (cat !== "Band / Name") setDesiredBandName("");
+                    }}
+                    className="font-cinzel text-xs tracking-[0.2em] uppercase px-4 py-2 transition-all duration-200"
+                    style={{
+                      border:
+                        desiredCategory === cat
+                          ? "1px solid oklch(75 0.18 50)"
+                          : "1px solid oklch(75 0.18 50 / 0.3)",
+                      background:
+                        desiredCategory === cat
+                          ? "oklch(75 0.18 50 / 0.12)"
+                          : "transparent",
+                      color:
+                        desiredCategory === cat
+                          ? "oklch(75 0.18 50)"
+                          : "oklch(75 0.18 50 / 0.5)",
+                      boxShadow:
+                        desiredCategory === cat
+                          ? "0 0 12px oklch(75 0.18 50 / 0.25)"
+                          : "none",
+                    }}
+                  >
+                    [ {cat} ]
+                  </button>
+                ))}
+              </div>
+
+              {/* Band name input when Band / Name is selected */}
+              {desiredCategory === "Band / Name" && (
+                <div className="relative mb-5">
+                  <label
+                    htmlFor="desired-band-name"
+                    className="font-cinzel text-xs tracking-[0.35em] uppercase mb-1 block"
+                    style={{ color: "oklch(75 0.18 50 / 0.7)" }}
+                  >
+                    Band Name
+                  </label>
+                  <input
+                    id="desired-band-name"
+                    data-ocid="audition.desired_band_name.input"
+                    value={desiredBandName}
+                    onChange={(e) => setDesiredBandName(e.target.value)}
+                    placeholder="Enter band name..."
+                    className={goldInput}
+                    style={goldInputStyle}
+                  />
+                </div>
+              )}
+
               <GoldButton
-                onClick={addVacancy}
-                ocid="audition.add_vacancy.button"
+                onClick={proceedWithDesiredRole}
+                ocid="audition.desired_role.submit_button"
+                disabled={
+                  !desiredName.trim() ||
+                  !desiredCategory ||
+                  desiredNameTaken ||
+                  (desiredCategory === "Band / Name" && !desiredBandName.trim())
+                }
               >
-                + Add
-              </GoldButton>
-              <GoldButton
-                onClick={openResponses}
-                ocid="audition.view_responses_button"
-              >
-                View Responses
-              </GoldButton>
-              <GoldButton onClick={() => setIsAdmin(false)}>
-                Log Out Admin
+                [ Proceed ]
               </GoldButton>
             </div>
-          </div>
+          </>
         )}
+        {/* ── ADMIN VIEW ── */}
+        {isAdmin && (
+          <div className="space-y-8">
+            {/* Add Custom Vacancy */}
+            <div
+              className="p-6"
+              style={{
+                border: "1px solid oklch(75 0.18 50 / 0.3)",
+                background: "oklch(75 0.18 50 / 0.03)",
+              }}
+            >
+              <p
+                className="font-cinzel text-xs tracking-[0.3em] uppercase mb-4"
+                style={{ color: "oklch(75 0.18 50)" }}
+              >
+                Add Custom Vacancy
+              </p>
+              <input
+                data-ocid="audition.add_vacancy.input"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                className={goldInput}
+                style={goldInputStyle}
+                placeholder="e.g. Custom Group · Member Name"
+              />
+              <textarea
+                value={newDesc}
+                onChange={(e) => setNewDesc(e.target.value)}
+                className={`${goldInput} mt-2 resize-none`}
+                style={goldInputStyle}
+                rows={2}
+                placeholder="Description (optional)"
+              />
+              <div className="flex flex-wrap gap-3 mt-4">
+                <GoldButton
+                  onClick={addCustomVacancy}
+                  ocid="audition.add_vacancy.button"
+                >
+                  + Add
+                </GoldButton>
+                <GoldButton
+                  onClick={openResponses}
+                  ocid="audition.view_responses_button"
+                >
+                  View Responses
+                </GoldButton>
+                <GoldButton onClick={() => setIsAdmin(false)}>
+                  Log Out Admin
+                </GoldButton>
+              </div>
+            </div>
+            {/* Active Vacancies */}
+            <div>
+              <p
+                className="font-cinzel text-xs tracking-[0.3em] uppercase mb-4"
+                style={{ color: "oklch(75 0.18 50)" }}
+              >
+                Active Vacancies
+              </p>
+              {sortedGroups.length === 0 ? (
+                <p
+                  className="font-raleway text-xs opacity-40 text-center py-4"
+                  style={{ color: "oklch(75 0.18 50)" }}
+                >
+                  All roles are taken
+                </p>
+              ) : (
+                <div className="space-y-1">
+                  {sortedGroups.map((group) => (
+                    <div key={group}>
+                      <div
+                        className="pt-4 pb-2"
+                        style={{
+                          borderTop: "1px solid oklch(75 0.18 50 / 0.15)",
+                        }}
+                      >
+                        <p
+                          className="font-cinzel text-xs font-bold tracking-[0.35em] uppercase"
+                          style={{ color: "oklch(75 0.18 50)" }}
+                        >
+                          {group}
+                        </p>
+                      </div>
+                      {groupedAvailable[group].map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between px-3 py-2"
+                          style={{
+                            borderBottom: "1px solid oklch(75 0.18 50 / 0.06)",
+                          }}
+                        >
+                          <span
+                            className="font-raleway text-sm"
+                            style={{ color: "oklch(80 0.09 50)" }}
+                          >
+                            {item.member}
+                          </span>
+                          <div className="flex gap-2">
+                            <GoldButton
+                              small
+                              onClick={() => removeAvailableVacancy(item.id)}
+                            >
+                              ✕
+                            </GoldButton>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Taken Roles */}
+            <div>
+              <p
+                className="font-cinzel text-xs tracking-[0.3em] uppercase mb-4"
+                style={{ color: "oklch(75 0.18 50 / 0.6)" }}
+              >
+                Taken Roles
+              </p>
+              {takenItems.length === 0 ? (
+                <p
+                  className="font-raleway text-xs opacity-40 text-center py-4"
+                  style={{ color: "oklch(75 0.18 50)" }}
+                >
+                  No roles taken yet
+                </p>
+              ) : (
+                <div className="space-y-1">
+                  {takenItems.map((item, i) => (
+                    <div
+                      key={item.id}
+                      data-ocid={`audition.taken.item.${i + 1}`}
+                      className="flex items-center justify-between px-3 py-2"
+                      style={{
+                        border: "1px solid oklch(75 0.18 50 / 0.15)",
+                        background: "oklch(75 0.18 50 / 0.02)",
+                      }}
+                    >
+                      <span
+                        className="font-raleway text-sm opacity-60"
+                        style={{ color: "oklch(80 0.09 50)" }}
+                      >
+                        {item.group} · {item.member}
+                      </span>
+                      <GoldButton
+                        small
+                        onClick={() => restoreVacancy(item.id)}
+                        ocid={`audition.restore_vacancy.button.${i + 1}`}
+                      >
+                        Restore
+                      </GoldButton>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}{" "}
       </div>
 
       {/* PIN Modal */}
@@ -652,6 +1004,7 @@ function VacancyPanel({
       {/* Responses Modal */}
       <Dialog open={showResponses} onOpenChange={setShowResponses}>
         <DialogContent
+          data-ocid="audition.responses.dialog"
           className="max-w-2xl max-h-[80vh] overflow-y-auto"
           style={{
             background: "#000",
@@ -668,6 +1021,7 @@ function VacancyPanel({
           </DialogHeader>
           {responses.length === 0 ? (
             <p
+              data-ocid="audition.responses.empty_state"
               className="font-raleway text-sm opacity-40 text-center py-8"
               style={{ color: "oklch(75 0.18 50)" }}
             >
@@ -678,9 +1032,22 @@ function VacancyPanel({
               {responses.map((r, i) => (
                 <div
                   key={r.id}
-                  className="p-4"
+                  data-ocid={`audition.responses.item.${i + 1}`}
+                  className="relative p-4 pr-16"
                   style={{ border: "1px solid oklch(75 0.18 50 / 0.3)" }}
                 >
+                  {/* Delete button — top-right corner */}
+                  <div className="absolute top-3 right-3">
+                    <GoldButton
+                      small
+                      danger
+                      ocid={`audition.delete_response.button.${i + 1}`}
+                      onClick={() => deleteResponse(r.id)}
+                    >
+                      ✕
+                    </GoldButton>
+                  </div>
+
                   <p
                     className="font-cinzel text-xs tracking-widest mb-2"
                     style={{ color: "oklch(75 0.18 50)" }}
@@ -747,6 +1114,9 @@ function ApplicationForm({
       submittedAt: new Date().toISOString(),
     };
     saveResponse(response);
+    if (vacancy.vacancyId) {
+      markVacancyTaken(vacancy.vacancyId);
+    }
     onSubmit();
   }
 
@@ -791,7 +1161,6 @@ function ApplicationForm({
         </div>
 
         <div className="space-y-5">
-          {/* Roleplay Name */}
           <div>
             <Label
               className="font-raleway text-xs tracking-widest uppercase mb-1 block"
@@ -816,7 +1185,6 @@ function ApplicationForm({
             )}
           </div>
 
-          {/* DOB */}
           <div>
             <Label
               className="font-raleway text-xs tracking-widest uppercase mb-1 block"
@@ -842,7 +1210,6 @@ function ApplicationForm({
             )}
           </div>
 
-          {/* Face Claim */}
           <div>
             <Label
               className="font-raleway text-xs tracking-widest uppercase mb-1 block"
@@ -868,7 +1235,6 @@ function ApplicationForm({
             )}
           </div>
 
-          {/* Contact Number */}
           <div>
             <Label
               className="font-raleway text-xs tracking-widest uppercase mb-1 block"
@@ -893,7 +1259,6 @@ function ApplicationForm({
             )}
           </div>
 
-          {/* Membership Status */}
           <div>
             <Label
               className="font-raleway text-xs tracking-widest uppercase mb-2 block"

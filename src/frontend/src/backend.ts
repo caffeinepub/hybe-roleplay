@@ -91,9 +91,13 @@ export class ExternalBlob {
 }
 export interface backendInterface {
     initialize(_owner: Principal): Promise<void>;
+    _initializeAccessControlWithSecret(secret: string): Promise<void>;
 }
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async _initializeAccessControlWithSecret(_secret: string): Promise<void> {
+        // no-op: access control not used in this backend
+    }
     async initialize(arg0: Principal): Promise<void> {
         if (this.processError) {
             try {

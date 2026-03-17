@@ -9,4 +9,5 @@ export interface None {
 export type Option<T> = Some<T> | None;
 export interface backendInterface {
     initialize(_owner: Principal): Promise<void>;
+    _initializeAccessControlWithSecret(secret: string): Promise<void>;
 }
