@@ -187,24 +187,9 @@ export function Dashboard({ visible }: { visible: boolean }) {
           borderRadius: "0 0 16px 16px",
         }}
       >
-        <div className="flex items-center gap-3">
-          <div className="h-px w-8 gold-shimmer" />
-          <span
-            className="font-cinzel text-sm tracking-[0.4em] uppercase"
-            style={{ color: "oklch(75 0.18 50)" }}
-          >
-            Hybe Music
-          </span>
-          <div className="h-px w-8 gold-shimmer" />
-        </div>
-        <div className="flex items-center gap-4">
-          <div
-            className="font-raleway text-xs tracking-[0.3em] uppercase opacity-40"
-            style={{ color: "oklch(75 0.18 50)" }}
-          >
-            The elements era
-          </div>
-          {/* Admin button — always in header, always above panels */}
+        {/* Left: Admin above Hybe Music */}
+        <div className="flex flex-col items-start gap-1">
+          {/* Admin button — top-left, above Hybe Music */}
           <button
             type="button"
             data-ocid="greeting.admin_button"
@@ -217,13 +202,51 @@ export function Dashboard({ visible }: { visible: boolean }) {
               backdropFilter: "blur(12px)",
               border: "1px solid oklch(75 0.18 50 / 0.35)",
               borderRadius: "20px",
-              padding: "4px 14px",
+              padding: "3px 12px",
               color: "oklch(75 0.18 50)",
               opacity: adminUnlocked ? 1 : 0.7,
               cursor: "pointer",
             }}
           >
             {adminUnlocked ? "Exit Admin" : "Admin"}
+          </button>
+          {/* Hybe Music row below admin */}
+          <div className="flex items-center gap-3">
+            <div className="h-px w-8 gold-shimmer" />
+            <span
+              className="font-cinzel text-sm tracking-[0.4em] uppercase"
+              style={{ color: "oklch(75 0.18 50)" }}
+            >
+              Hybe Music
+            </span>
+            <div className="h-px w-8 gold-shimmer" />
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div
+            className="font-raleway text-xs tracking-[0.3em] uppercase opacity-40"
+            style={{ color: "oklch(75 0.18 50)" }}
+          >
+            The elements era
+          </div>
+          {/* Games pill button — minimized, in header */}
+          <button
+            type="button"
+            data-ocid="dashboard.games_button"
+            onClick={() => setActivePanel("games")}
+            className="font-cinzel text-xs tracking-widest uppercase transition-all duration-200 hover:opacity-100"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid oklch(75 0.18 50 / 0.35)",
+              borderRadius: "20px",
+              padding: "4px 14px",
+              color: "oklch(75 0.18 50)",
+              opacity: 0.7,
+              cursor: "pointer",
+            }}
+          >
+            🎮 Games
           </button>
         </div>
       </header>
@@ -316,28 +339,6 @@ export function Dashboard({ visible }: { visible: boolean }) {
           </div>
         </div>
       )}
-
-      {/* Games button — between header and greeting carousel */}
-      <div className="relative z-10 flex justify-center px-6 mt-4">
-        <button
-          type="button"
-          data-ocid="dashboard.games_button"
-          onClick={() => setActivePanel("games")}
-          className="w-full max-w-lg font-cinzel text-sm tracking-[0.25em] uppercase transition-all duration-300 hover:scale-[1.01] hover:opacity-90 py-3 px-6"
-          style={{
-            background: "rgba(255,255,255,0.04)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            border: "1px solid rgba(255,255,255,0.18)",
-            borderRadius: "20px",
-            boxShadow: "0 0 14px rgba(255,255,255,0.07)",
-            color: "rgba(255,255,255,0.85)",
-            cursor: "pointer",
-          }}
-        >
-          🎮 Games
-        </button>
-      </div>
 
       {/* Greeting Carousel — passes admin state down */}
       <GreetingCarousel

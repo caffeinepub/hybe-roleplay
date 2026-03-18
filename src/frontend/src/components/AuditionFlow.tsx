@@ -437,6 +437,7 @@ function VacancyPanel({
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupMembers, setNewGroupMembers] = useState("");
   const [addGroupError, setAddGroupError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const availableItems = vacancyItems.filter(
     (v) => !v.taken && !removedGroups.includes(v.group),
@@ -615,6 +616,27 @@ function VacancyPanel({
     return ai - bi;
   });
 
+  const q = searchQuery.trim().toLowerCase();
+  const filteredGroups = q
+    ? sortedGroups.filter(
+        (g) =>
+          g.toLowerCase().includes(q) ||
+          groupedAvailable[g].some((item) =>
+            item.member.toLowerCase().includes(q),
+          ),
+      )
+    : sortedGroups;
+  const filteredGroupedAvailable: Record<string, VacancyItem[]> = {};
+  for (const g of filteredGroups) {
+    filteredGroupedAvailable[g] = q
+      ? groupedAvailable[g].filter(
+          (item) =>
+            g.toLowerCase().includes(q) ||
+            item.member.toLowerCase().includes(q),
+        )
+      : groupedAvailable[g];
+  }
+
   return (
     <div
       data-ocid="audition.vacancy_panel"
@@ -670,7 +692,38 @@ function VacancyPanel({
         {/* ── USER VIEW ── */}
         {!isAdmin && (
           <>
-            {sortedGroups.length === 0 ? (
+            {/* Search bar */}
+            <div className="relative mb-6">
+              <span
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-sm pointer-events-none"
+                style={{ color: "oklch(75 0.18 50 / 0.5)" }}
+              >
+                🔍
+              </span>
+              <input
+                data-ocid="audition.vacancy.search_input"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search roles..."
+                className="font-cinzel text-sm w-full outline-none transition-all duration-200"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid oklch(75 0.18 50 / 0.3)",
+                  borderRadius: "12px",
+                  color: "oklch(75 0.18 50)",
+                  padding: "10px 16px 10px 40px",
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow =
+                    "0 0 0 2px oklch(75 0.18 50 / 0.2)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              />
+            </div>
+            {filteredGroups.length === 0 ? (
               <div
                 data-ocid="audition.vacancy.empty_state"
                 className="text-center py-16"
@@ -679,12 +732,14 @@ function VacancyPanel({
                   className="font-raleway text-sm tracking-widest opacity-40"
                   style={{ color: "oklch(75 0.18 50)" }}
                 >
-                  No vacancies available at the moment
+                  {searchQuery.trim()
+                    ? "No roles found"
+                    : "No vacancies available at the moment"}
                 </p>
               </div>
             ) : (
               <div className="space-y-1">
-                {sortedGroups.map((group) => (
+                {filteredGroups.map((group) => (
                   <div key={group}>
                     {/* Group header */}
                     <div
@@ -702,7 +757,7 @@ function VacancyPanel({
                     </div>
                     {/* Member cards grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2 mb-3">
-                      {groupedAvailable[group].map((item) => (
+                      {filteredGroupedAvailable[group].map((item) => (
                         <button
                           key={item.id}
                           type="button"
