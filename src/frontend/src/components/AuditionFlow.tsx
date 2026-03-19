@@ -8,6 +8,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 
+const DEFAULT_RULES = [
+  "Until the opening ceremony takes place, Members are not allowed to disclose their roles / identity in front of anyone. Not even their friends.",
+  "You can not disclose your element to the other person and give them even the slightest hint of the bands within the element to maintain the secrecy and the concept of the group.",
+  "Choose your face claim wisely, after joining the group you're only allowed to change your face claim once, that too after the opening.",
+  "The events in the opening ceremony will be shared soon.",
+  'Copying any event / theme / concept in name of "inspiration" is entirely prohibited. If caught, a copyright would be given right away.',
+  "The group is highly activity based. Active participation is mandatory. No excuses will be entertained.",
+  'After joining the waiting/reservation area. DO NOT add your role in the "members tag" until opening. You can add your roleplay name if you want.',
+];
+
+function loadRules(): string[] {
+  try {
+    const raw = localStorage.getItem("hybe_rules");
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return DEFAULT_RULES;
+}
+
+function saveRules(rules: string[]) {
+  localStorage.setItem("hybe_rules", JSON.stringify(rules));
+}
+
 type Step = "rules" | "vacancy" | "form" | "confirmation";
 
 interface VacancyItem {
@@ -239,80 +261,10 @@ function GoldButton({
 }
 
 // ─── Step 1: Rules Overlay ────────────────────────────────────────────────────
-function RulesOverlay({ onNext }: { onNext: () => void }) {
-  const rules = [
-    {
-      num: "001",
-      text: (
-        <span>
-          Until the opening ceremony takes place, Members are not allowed to
-          disclose their roles / identity in front of{" "}
-          <strong style={{ color: "oklch(75 0.18 50)" }}>anyone</strong>. Not
-          even their friends.
-        </span>
-      ),
-    },
-    {
-      num: "002",
-      text: (
-        <span>
-          You can not disclose your element to the other person and give them
-          even the slightest hint of the bands within the element to maintain
-          the secrecy and the concept of the group.
-        </span>
-      ),
-    },
-    {
-      num: "003",
-      text: (
-        <span>
-          Choose your face claim wisely, after joining the group you're only
-          allowed to change your face claim once, that too after the opening.
-        </span>
-      ),
-    },
-    {
-      num: "004",
-      text: (
-        <span>The events in the opening ceremony will be shared soon.</span>
-      ),
-    },
-    {
-      num: "005",
-      text: (
-        <span>
-          Copying any event / theme / concept in name of <em>"inspiration"</em>{" "}
-          is entirely prohibited. If caught, a copyright would be given right
-          away.
-        </span>
-      ),
-    },
-    {
-      num: "006",
-      text: (
-        <span>
-          The group is highly activity based. Active participation is{" "}
-          <strong style={{ color: "oklch(75 0.18 50)" }}>mandatory</strong>. No
-          excuses will be entertained.
-        </span>
-      ),
-    },
-    {
-      num: "007",
-      text: (
-        <span>
-          After joining the waiting/reservation area.{" "}
-          <strong style={{ color: "oklch(75 0.18 50)" }}>DO NOT</strong> add
-          your role in the{" "}
-          <strong style={{ color: "oklch(75 0.18 50)" }}>
-            &quot;members tag&quot;
-          </strong>{" "}
-          until opening. You can add your roleplay name if you want.
-        </span>
-      ),
-    },
-  ];
-
+function RulesOverlay({
+  onNext,
+  rules,
+}: { onNext: () => void; rules: string[] }) {
   return (
     <div
       data-ocid="audition.rules_overlay"
@@ -358,29 +310,32 @@ function RulesOverlay({ onNext }: { onNext: () => void }) {
           </div>
 
           <ol className="space-y-5">
-            {rules.map((rule) => (
-              <li key={rule.num} className="flex gap-4 items-start">
-                <span
-                  className="shrink-0 font-mono text-xs px-2 py-1"
-                  style={{
-                    border: "1px solid oklch(75 0.18 50 / 0.4)",
-                    color: "oklch(75 0.18 50)",
-                    background: "oklch(75 0.18 50 / 0.08)",
-                    letterSpacing: "0.1em",
-                    borderRadius: "6px",
-                    boxShadow: "0 0 8px oklch(75 0.18 50 / 0.1)",
-                  }}
-                >
-                  {rule.num}
-                </span>
-                <p
-                  className="font-raleway text-sm leading-relaxed opacity-85"
-                  style={{ color: "oklch(85 0.05 50)" }}
-                >
-                  {rule.text}
-                </p>
-              </li>
-            ))}
+            {rules.map((ruleText, idx) => {
+              const num = String(idx + 1).padStart(3, "0");
+              return (
+                <li key={num} className="flex gap-4 items-start">
+                  <span
+                    className="shrink-0 font-mono text-xs px-2 py-1"
+                    style={{
+                      border: "1px solid oklch(75 0.18 50 / 0.4)",
+                      color: "oklch(75 0.18 50)",
+                      background: "oklch(75 0.18 50 / 0.08)",
+                      letterSpacing: "0.1em",
+                      borderRadius: "6px",
+                      boxShadow: "0 0 8px oklch(75 0.18 50 / 0.1)",
+                    }}
+                  >
+                    {num}
+                  </span>
+                  <p
+                    className="font-raleway text-sm leading-relaxed opacity-85"
+                    style={{ color: "oklch(85 0.05 50)" }}
+                  >
+                    {ruleText}
+                  </p>
+                </li>
+              );
+            })}
           </ol>
 
           <div className="h-px w-24 mx-auto gold-shimmer mt-8" />
@@ -407,7 +362,14 @@ function RulesOverlay({ onNext }: { onNext: () => void }) {
 function VacancyPanel({
   onBack,
   onSelectVacancy,
-}: { onBack: () => void; onSelectVacancy: (v: Vacancy) => void }) {
+  rules,
+  onRulesChange,
+}: {
+  onBack: () => void;
+  onSelectVacancy: (v: Vacancy) => void;
+  rules: string[];
+  onRulesChange: (r: string[]) => void;
+}) {
   const [vacancyItems, setVacancyItems] =
     useState<VacancyItem[]>(initVacancies);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -438,6 +400,7 @@ function VacancyPanel({
   const [newGroupMembers, setNewGroupMembers] = useState("");
   const [addGroupError, setAddGroupError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [editRules, setEditRules] = useState<string[]>(() => rules);
 
   const availableItems = vacancyItems.filter(
     (v) => !v.taken && !removedGroups.includes(v.group),
@@ -991,6 +954,62 @@ function VacancyPanel({
                   Log Out Admin
                 </GoldButton>
               </div>
+            </div>
+
+            {/* Edit Rules Section */}
+            <div
+              className="p-5 space-y-3"
+              style={{
+                border: "1px solid oklch(75 0.18 50 / 0.2)",
+                background: "rgba(255,255,255,0.03)",
+                backdropFilter: "blur(16px) saturate(160%)",
+                WebkitBackdropFilter: "blur(16px) saturate(160%)",
+                borderRadius: "14px",
+                boxShadow:
+                  "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
+              }}
+            >
+              <p
+                className="font-cinzel text-xs tracking-[0.3em] uppercase mb-4"
+                style={{ color: "oklch(75 0.18 50)" }}
+              >
+                Edit Rules
+              </p>
+              {editRules.map((rule, i) => {
+                const ruleId = `edit-rule-${i}`;
+                return (
+                  <div key={ruleId} className="space-y-1">
+                    <label
+                      htmlFor={ruleId}
+                      className="font-cinzel text-xs tracking-widest uppercase block"
+                      style={{ color: "oklch(75 0.18 50 / 0.6)" }}
+                    >
+                      Rule {String(i + 1).padStart(3, "0")}
+                    </label>
+                    <textarea
+                      id={ruleId}
+                      value={rule}
+                      onChange={(e) => {
+                        const updated = [...editRules];
+                        updated[i] = e.target.value;
+                        setEditRules(updated);
+                      }}
+                      rows={3}
+                      className="font-raleway text-sm border outline-none focus:ring-1 px-3 py-2 w-full resize-none"
+                      style={goldInputStyle}
+                    />
+                  </div>
+                );
+              })}
+              <GoldButton
+                onClick={() => {
+                  saveRules(editRules);
+                  onRulesChange(editRules);
+                }}
+                ocid="audition.save_rules_button"
+              >
+                Save Rules
+              </GoldButton>
             </div>
 
             {/* Add Group Section */}
@@ -1681,9 +1700,10 @@ function ConfirmationPage({ onDone }: { onDone: () => void }) {
 export function AuditionFlow({ onBack }: { onBack: () => void }) {
   const [step, setStep] = useState<Step>("rules");
   const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null);
+  const [rules, setRules] = useState<string[]>(loadRules);
 
   if (step === "rules") {
-    return <RulesOverlay onNext={() => setStep("vacancy")} />;
+    return <RulesOverlay onNext={() => setStep("vacancy")} rules={rules} />;
   }
 
   if (step === "vacancy") {
@@ -1694,6 +1714,8 @@ export function AuditionFlow({ onBack }: { onBack: () => void }) {
           setSelectedVacancy(v);
           setStep("form");
         }}
+        rules={rules}
+        onRulesChange={setRules}
       />
     );
   }

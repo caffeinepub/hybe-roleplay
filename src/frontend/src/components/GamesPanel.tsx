@@ -2,6 +2,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 
+function compressImage(
+  dataUrl: string,
+  maxWidth = 400,
+  quality = 0.6,
+): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let w = img.width;
+      let h = img.height;
+      if (w > maxWidth) {
+        h = Math.round((h * maxWidth) / w);
+        w = maxWidth;
+      }
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
 interface Game {
   id: string;
   name: string;
@@ -49,12 +74,15 @@ export function GamesPanel({ onBack, adminUnlocked }: GamesPanelProps) {
     setShowForm(false);
   };
 
-  const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThumbnailUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
-      setFormThumbnail(ev.target?.result as string);
+    reader.onload = async (ev) => {
+      const compressed = await compressImage(ev.target?.result as string);
+      setFormThumbnail(compressed);
     };
     reader.readAsDataURL(file);
   };
