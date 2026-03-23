@@ -5,9 +5,9 @@ import { AuditionFlow } from "./AuditionFlow";
 import { CreatorsPanel } from "./CreatorsPanel";
 import { ElementsPanel } from "./ElementsPanel";
 import { EventsPanel } from "./EventsPanel";
-import { GamesPanel } from "./GamesPanel";
 import { GreetingCarousel } from "./GreetingCarousel";
 import { HighlightsPanel } from "./HighlightsPanel";
+import { TokenPanel } from "./TokenPanel";
 
 const ADMIN_PIN = "hybe2024";
 
@@ -18,7 +18,7 @@ type PanelId =
   | "events"
   | "channel"
   | "highlights"
-  | "games";
+  | "token";
 
 interface Panel {
   id: PanelId;
@@ -111,13 +111,8 @@ export function Dashboard({ visible }: { visible: boolean }) {
     return <HighlightsPanel onBack={() => setActivePanel(null)} />;
   }
 
-  if (activePanel === "games") {
-    return (
-      <GamesPanel
-        onBack={() => setActivePanel(null)}
-        adminUnlocked={adminUnlocked}
-      />
-    );
+  if (activePanel === "token") {
+    return <TokenPanel onBack={() => setActivePanel(null)} />;
   }
 
   const handlePanelClick = (panel: Panel) => {
@@ -229,11 +224,11 @@ export function Dashboard({ visible }: { visible: boolean }) {
           >
             The elements era
           </div>
-          {/* Games pill button — minimized, in header */}
+          {/* Token pill button — minimized, in header */}
           <button
             type="button"
-            data-ocid="dashboard.games_button"
-            onClick={() => setActivePanel("games")}
+            data-ocid="dashboard.token_button"
+            onClick={() => setActivePanel("token")}
             className="font-cinzel text-xs tracking-widest uppercase transition-all duration-200 hover:opacity-100"
             style={{
               background: "rgba(255,255,255,0.05)",
@@ -246,7 +241,7 @@ export function Dashboard({ visible }: { visible: boolean }) {
               cursor: "pointer",
             }}
           >
-            🎮 Games
+            ◈ Token
           </button>
         </div>
       </header>
