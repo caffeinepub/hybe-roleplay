@@ -6,7 +6,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useActor } from "../hooks/useActor";
 
 const DEFAULT_RULES = [
   "Until the opening ceremony takes place, Members are not allowed to disclose their roles / identity in front of anyone. Not even their friends.",
@@ -55,6 +56,9 @@ interface Response {
   contactNumber: string;
   membershipStatus: string;
   submittedAt: string;
+  // Backend fields (optional for compat)
+  groupName?: string;
+  roleName?: string;
 }
 
 const DEFAULT_VACANCY_GROUPS = [
@@ -370,8 +374,8 @@ function VacancyPanel({
   rules: string[];
   onRulesChange: (r: string[]) => void;
 }) {
-  const [vacancyItems, setVacancyItems] =
-    useState<VacancyItem[]>(initVacancies);
+  const { actor } = useActor();
+  const [vacancyItems, setVacancyItems] = useState<VacancyItem[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [pin, setPin] = useState("");
@@ -401,6 +405,54 @@ function VacancyPanel({
   const [addGroupError, setAddGroupError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [editRules, setEditRules] = useState<string[]>(() => rules);
+
+  // Load groups from backend on mount
+  useEffect(() => {
+    if (!actor) return;
+    (actor as any)
+      .getGroups()
+      .then((raw: string) => {
+        if (raw?.trim()) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setVacancyItems(parsed);
+              return;
+            }
+          } catch {}
+        }
+        // Fall back to defaults
+        const defaults: VacancyItem[] = DEFAULT_VACANCY_GROUPS.flatMap(
+          ({ group, members }) =>
+            members.map((member) => ({
+              id: `${group}-${member}`.toLowerCase().replace(/\s+/g, "-"),
+              group,
+              member,
+              taken: false,
+            })),
+        );
+        setVacancyItems(defaults);
+      })
+      .catch(() => {
+        const cached = localStorage.getItem("hybe_vacancies_v2");
+        if (cached) {
+          try {
+            setVacancyItems(JSON.parse(cached));
+            return;
+          } catch {}
+        }
+        const defaults: VacancyItem[] = DEFAULT_VACANCY_GROUPS.flatMap(
+          ({ group, members }) =>
+            members.map((member) => ({
+              id: `${group}-${member}`.toLowerCase().replace(/\s+/g, "-"),
+              group,
+              member,
+              taken: false,
+            })),
+        );
+        setVacancyItems(defaults);
+      });
+  }, [actor]);
 
   const availableItems = vacancyItems.filter(
     (v) => !v.taken && !removedGroups.includes(v.group),
@@ -433,12 +485,19 @@ function VacancyPanel({
     }
   }
 
+  function syncGroups(items: VacancyItem[]) {
+    saveVacancyItems(items);
+    if (actor) {
+      (actor as any).setGroups(JSON.stringify(items)).catch(() => {});
+    }
+  }
+
   function restoreVacancy(id: string) {
     const updated = vacancyItems.map((v) =>
       v.id === id ? { ...v, taken: false } : v,
     );
     setVacancyItems(updated);
-    saveVacancyItems(updated);
+    syncGroups(updated);
   }
 
   function removeAvailableVacancy(id: string) {
@@ -446,7 +505,7 @@ function VacancyPanel({
       v.id === id ? { ...v, taken: true } : v,
     );
     setVacancyItems(updated);
-    saveVacancyItems(updated);
+    syncGroups(updated);
   }
 
   function addCustomVacancy() {
@@ -459,7 +518,7 @@ function VacancyPanel({
     };
     const updated = [...vacancyItems, newItem];
     setVacancyItems(updated);
-    saveVacancyItems(updated);
+    syncGroups(updated);
     setNewTitle("");
     setNewDesc("");
   }
@@ -504,7 +563,7 @@ function VacancyPanel({
     }));
     const updated = [...vacancyItems, ...newItems];
     setVacancyItems(updated);
-    saveVacancyItems(updated);
+    syncGroups(updated);
     // Remove from removedGroups if it was previously removed
     const updatedRemoved = removedGroups.filter(
       (g) => g.toLowerCase() !== name.toLowerCase(),
@@ -517,30 +576,66 @@ function VacancyPanel({
   }
 
   function openResponses() {
-    setResponses(getResponses());
     setShowResponses(true);
+    if (actor) {
+      (actor as any)
+        .getResponses()
+        .then((backendResponses: any[]) => {
+          const mapped: Response[] = backendResponses.map((r) => ({
+            id: String(r.id),
+            vacancyTitle:
+              r.groupName && r.roleName
+                ? `${r.groupName} · ${r.roleName}`
+                : r.groupName || r.roleName || "",
+            roleplayName: r.roleplayName,
+            dob: r.dob,
+            faceClaim: r.faceClaim,
+            contactNumber: r.contactNumber,
+            membershipStatus: r.membershipStatus,
+            submittedAt: r.timestamp
+              ? new Date(Number(r.timestamp) / 1_000_000).toISOString()
+              : new Date().toISOString(),
+            groupName: r.groupName,
+            roleName: r.roleName,
+          }));
+          setResponses(mapped);
+        })
+        .catch(() => {
+          setResponses(getResponses());
+        });
+    } else {
+      setResponses(getResponses());
+    }
   }
 
   function deleteResponse(responseId: string) {
-    const allResp = getResponses();
-    const target = allResp.find((r) => r.id === responseId);
-    const updated = allResp.filter((r) => r.id !== responseId);
-    localStorage.setItem("hybe_responses", JSON.stringify(updated));
-    if (target) {
-      const titleLower = target.vacancyTitle.toLowerCase();
-      const matchedItem = vacancyItems.find((item) => {
-        const itemTitle = `${item.group} · ${item.member}`.toLowerCase();
-        return itemTitle === titleLower;
-      });
-      if (matchedItem) {
-        const updatedVacancies = vacancyItems.map((v) =>
-          v.id === matchedItem.id ? { ...v, taken: false } : v,
-        );
-        setVacancyItems(updatedVacancies);
-        saveVacancyItems(updatedVacancies);
-      }
-    }
+    const target = responses.find((r) => r.id === responseId);
+    const updated = responses.filter((r) => r.id !== responseId);
     setResponses(updated);
+    if (actor) {
+      (actor as any)
+        .deleteResponse(BigInt(responseId))
+        .then((result: any[]) => {
+          const restored = result && result.length > 0 ? result[0] : null;
+          const gName = restored ? restored.groupName : target?.groupName || "";
+          const mName = restored ? restored.roleName : target?.roleName || "";
+          const titleLower =
+            target?.vacancyTitle?.toLowerCase() ||
+            `${gName} · ${mName}`.toLowerCase();
+          const matchedItem = vacancyItems.find((item) => {
+            const itemTitle = `${item.group} · ${item.member}`.toLowerCase();
+            return itemTitle === titleLower;
+          });
+          if (matchedItem) {
+            const updatedVacancies = vacancyItems.map((v) =>
+              v.id === matchedItem.id ? { ...v, taken: false } : v,
+            );
+            setVacancyItems(updatedVacancies);
+            syncGroups(updatedVacancies);
+          }
+        })
+        .catch(() => {});
+    }
   }
 
   function proceedWithDesiredRole() {
@@ -1005,6 +1100,11 @@ function VacancyPanel({
                 onClick={() => {
                   saveRules(editRules);
                   onRulesChange(editRules);
+                  if (actor) {
+                    (actor as any)
+                      .setRules(JSON.stringify(editRules))
+                      .catch(() => {});
+                  }
                 }}
                 ocid="audition.save_rules_button"
               >
@@ -1367,6 +1467,7 @@ function ApplicationForm({
   onBack,
   onSubmit,
 }: { vacancy: Vacancy; onBack: () => void; onSubmit: () => void }) {
+  const { actor } = useActor();
   const [roleplayName, setRoleplayName] = useState("");
   const [dob, setDob] = useState("");
   const [faceClaim, setFaceClaim] = useState("");
@@ -1387,6 +1488,25 @@ function ApplicationForm({
 
   function handleSubmit() {
     if (!validate()) return;
+    // Parse group and role from vacancy title (format: "Group · Member")
+    const parts = vacancy.title.split(" · ");
+    const groupName = parts.length > 1 ? parts.slice(0, -1).join(" · ") : "";
+    const roleName = parts.length > 1 ? parts[parts.length - 1] : vacancy.title;
+    // Submit to backend
+    if (actor) {
+      (actor as any)
+        .submitResponse(
+          roleplayName,
+          dob,
+          faceClaim,
+          contactNumber,
+          membershipStatus,
+          groupName,
+          roleName,
+        )
+        .catch(() => {});
+    }
+    // Also save to localStorage as fallback
     const response: Response = {
       id: Date.now().toString(),
       vacancyTitle: vacancy.title,
@@ -1396,6 +1516,8 @@ function ApplicationForm({
       contactNumber,
       membershipStatus,
       submittedAt: new Date().toISOString(),
+      groupName,
+      roleName,
     };
     saveResponse(response);
     if (vacancy.vacancyId) {
@@ -1698,9 +1820,27 @@ function ConfirmationPage({ onDone }: { onDone: () => void }) {
 
 // ─── Main AuditionFlow ────────────────────────────────────────────────────────
 export function AuditionFlow({ onBack }: { onBack: () => void }) {
+  const { actor } = useActor();
   const [step, setStep] = useState<Step>("rules");
   const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null);
   const [rules, setRules] = useState<string[]>(loadRules);
+
+  useEffect(() => {
+    if (!actor) return;
+    (actor as any)
+      .getRules()
+      .then((raw: string) => {
+        if (raw?.trim()) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setRules(parsed);
+            }
+          } catch {}
+        }
+      })
+      .catch(() => {});
+  }, [actor]);
 
   if (step === "rules") {
     return <RulesOverlay onNext={() => setStep("vacancy")} rules={rules} />;

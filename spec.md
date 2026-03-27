@@ -1,26 +1,31 @@
 # Hybe Roleplay
 
 ## Current State
-Dashboard has 6 main panels (Creators, Audition, Elements, Events, Channel, Highlights) with a GreetingCarousel above them and a header with an Admin button.
+The app uses localStorage for all data: audition responses, vacancy/group state, and rules. This means:
+- Responses submitted by users are only visible in the submitter's browser -- admins on other devices cannot see them.
+- Vacancy changes made by admins are not visible to other users/friends.
+- The Elements panel is currently one of five main panels on the homescreen.
 
 ## Requested Changes (Diff)
 
 ### Add
-- A `GamesPanel` component: displays all games in a list of curved, frosted glass cards with subtle white glow. Each card shows thumbnail + name. Tapping the thumbnail opens the attached link. Empty placeholder when no games exist. Admin controls (PIN `hybe2024`) to add/edit/delete games (thumbnail upload, name, link).
-- A "Games" button in the Dashboard, positioned above the hero text and panels but below the header. Styled curved, frosted glass with subtle white glow. Clicking it opens the GamesPanel overlay.
+- Motoko backend APIs for:
+  - Submitting audition responses (stored centrally)
+  - Fetching all audition responses (admin)
+  - Deleting a response by ID (admin)
+  - Storing and fetching vacancy groups/members state
+  - Storing and fetching audition rules (admin-editable)
 
 ### Modify
-- Dashboard: add Games button between the header and hero text sections.
+- AuditionFlow.tsx: replace localStorage reads/writes for responses, vacancy groups, and rules with backend actor calls
+- PanelView.tsx / Dashboard.tsx: remove Elements panel from the panel list
 
 ### Remove
-- Nothing removed.
+- Elements panel from the main homescreen panel list
+- ElementsPanel.tsx references from the panel router/view
 
 ## Implementation Plan
-1. Create `src/frontend/src/components/GamesPanel.tsx` with:
-   - Local state for games list (stored in localStorage for persistence)
-   - Games list view: curved frosted glass cards, thumbnail + name, tap thumbnail opens link in new tab
-   - Empty state: cinematic "no games yet" placeholder
-   - Admin section (PIN `hybe2024`): add/edit/delete games; each game has thumbnail (image upload), name, link
-   - Styling: curved borders, frosted glass backdrop, subtle white glow (box-shadow with white)
-   - Back button to return to dashboard
-2. Update `Dashboard.tsx`: add `showGames` state, a curved frosted glass "Games" button between header and hero text, render GamesPanel when active.
+1. Generate Motoko backend with: submitResponse, getResponses, deleteResponse, setGroups, getGroups, setRules, getRules
+2. Update AuditionFlow.tsx to call backend for responses, vacancy groups, and rules (keep localStorage only as cache fallback)
+3. Remove Elements from the panels array in PanelView.tsx and Dashboard.tsx
+4. Validate and deploy

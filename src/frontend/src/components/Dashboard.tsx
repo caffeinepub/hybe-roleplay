@@ -3,13 +3,12 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { AuditionFlow } from "./AuditionFlow";
 import { CreatorsPanel } from "./CreatorsPanel";
-import { ElementsPanel } from "./ElementsPanel";
 import { GreetingCarousel } from "./GreetingCarousel";
 import { HighlightsPanel } from "./HighlightsPanel";
 
 const ADMIN_PIN = "hybe2024";
 
-type PanelId = "creators" | "inventory" | "elements" | "channel" | "highlights";
+type PanelId = "creators" | "inventory" | "channel" | "highlights";
 
 interface Panel {
   id: PanelId;
@@ -39,20 +38,12 @@ const PANELS: Panel[] = [
     delay: "120ms",
   },
   {
-    id: "elements",
-    label: "Elements",
-    icon: "⬡",
-    description: "Forces of the realm",
-    ocid: "dashboard.elements_panel",
-    delay: "240ms",
-  },
-  {
     id: "channel",
     label: "Channel",
     icon: "⊹",
     description: "Join our WhatsApp channel",
     ocid: "dashboard.channel_panel",
-    delay: "360ms",
+    delay: "240ms",
     externalUrl: "https://whatsapp.com/channel/0029VbCEwmU4dTnRdoJutS08",
   },
   {
@@ -61,7 +52,7 @@ const PANELS: Panel[] = [
     icon: "◉",
     description: "Captured moments",
     ocid: "dashboard.highlights_panel",
-    delay: "480ms",
+    delay: "360ms",
   },
 ];
 
@@ -80,10 +71,6 @@ export function Dashboard({ visible }: { visible: boolean }) {
 
   if (activePanel === "creators") {
     return <CreatorsPanel onBack={() => setActivePanel(null)} />;
-  }
-
-  if (activePanel === "elements") {
-    return <ElementsPanel onBack={() => setActivePanel(null)} />;
   }
 
   if (activePanel === "highlights") {
