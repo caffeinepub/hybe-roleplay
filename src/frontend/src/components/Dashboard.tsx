@@ -4,21 +4,12 @@ import { useState } from "react";
 import { AuditionFlow } from "./AuditionFlow";
 import { CreatorsPanel } from "./CreatorsPanel";
 import { ElementsPanel } from "./ElementsPanel";
-import { EventsPanel } from "./EventsPanel";
 import { GreetingCarousel } from "./GreetingCarousel";
 import { HighlightsPanel } from "./HighlightsPanel";
-import { TokenPanel } from "./TokenPanel";
 
 const ADMIN_PIN = "hybe2024";
 
-type PanelId =
-  | "creators"
-  | "inventory"
-  | "elements"
-  | "events"
-  | "channel"
-  | "highlights"
-  | "token";
+type PanelId = "creators" | "inventory" | "elements" | "channel" | "highlights";
 
 interface Panel {
   id: PanelId;
@@ -56,20 +47,12 @@ const PANELS: Panel[] = [
     delay: "240ms",
   },
   {
-    id: "events",
-    label: "Events",
-    icon: "◎",
-    description: "Chronicles & quests",
-    ocid: "dashboard.events_panel",
-    delay: "360ms",
-  },
-  {
     id: "channel",
     label: "Channel",
     icon: "⊹",
     description: "Join our WhatsApp channel",
     ocid: "dashboard.channel_panel",
-    delay: "480ms",
+    delay: "360ms",
     externalUrl: "https://whatsapp.com/channel/0029VbCEwmU4dTnRdoJutS08",
   },
   {
@@ -78,7 +61,7 @@ const PANELS: Panel[] = [
     icon: "◉",
     description: "Captured moments",
     ocid: "dashboard.highlights_panel",
-    delay: "600ms",
+    delay: "480ms",
   },
 ];
 
@@ -103,16 +86,8 @@ export function Dashboard({ visible }: { visible: boolean }) {
     return <ElementsPanel onBack={() => setActivePanel(null)} />;
   }
 
-  if (activePanel === "events") {
-    return <EventsPanel onBack={() => setActivePanel(null)} />;
-  }
-
   if (activePanel === "highlights") {
     return <HighlightsPanel onBack={() => setActivePanel(null)} />;
-  }
-
-  if (activePanel === "token") {
-    return <TokenPanel onBack={() => setActivePanel(null)} />;
   }
 
   const handlePanelClick = (panel: Panel) => {
@@ -224,25 +199,6 @@ export function Dashboard({ visible }: { visible: boolean }) {
           >
             The elements era
           </div>
-          {/* Token pill button — minimized, in header */}
-          <button
-            type="button"
-            data-ocid="dashboard.token_button"
-            onClick={() => setActivePanel("token")}
-            className="font-cinzel text-xs tracking-widest uppercase transition-all duration-200 hover:opacity-100"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid oklch(75 0.18 50 / 0.35)",
-              borderRadius: "20px",
-              padding: "4px 14px",
-              color: "oklch(75 0.18 50)",
-              opacity: 0.7,
-              cursor: "pointer",
-            }}
-          >
-            ◈ Token
-          </button>
         </div>
       </header>
 
