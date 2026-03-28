@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { AuditionFlow } from "./AuditionFlow";
+import { AuditionErrorBoundary, AuditionFlow } from "./AuditionFlow";
 import { CreatorsPanel } from "./CreatorsPanel";
 import { GreetingCarousel } from "./GreetingCarousel";
 import { HighlightsPanel } from "./HighlightsPanel";
@@ -66,7 +66,11 @@ export function Dashboard({ visible }: { visible: boolean }) {
   if (!visible) return null;
 
   if (activePanel === "inventory") {
-    return <AuditionFlow onBack={() => setActivePanel(null)} />;
+    return (
+      <AuditionErrorBoundary onBack={() => setActivePanel(null)}>
+        <AuditionFlow onBack={() => setActivePanel(null)} />
+      </AuditionErrorBoundary>
+    );
   }
 
   if (activePanel === "creators") {

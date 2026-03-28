@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useActor } from "../hooks/useActor";
 
 const DEFAULT_RULES = [
@@ -272,7 +272,7 @@ function RulesOverlay({
   return (
     <div
       data-ocid="audition.rules_overlay"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="min-h-screen w-full flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,0.92)", backdropFilter: "blur(6px)" }}
     >
       <div
@@ -375,7 +375,9 @@ function VacancyPanel({
   onRulesChange: (r: string[]) => void;
 }) {
   const { actor } = useActor();
-  const [vacancyItems, setVacancyItems] = useState<VacancyItem[]>([]);
+  const [vacancyItems, setVacancyItems] =
+    useState<VacancyItem[]>(initVacancies);
+  const [loadingVacancies, setLoadingVacancies] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [pin, setPin] = useState("");
@@ -408,7 +410,10 @@ function VacancyPanel({
 
   // Load groups from backend on mount
   useEffect(() => {
-    if (!actor) return;
+    if (!actor) {
+      setLoadingVacancies(false);
+      return;
+    }
     (actor as any)
       .getGroups()
       .then((raw: string) => {
@@ -417,6 +422,7 @@ function VacancyPanel({
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed) && parsed.length > 0) {
               setVacancyItems(parsed);
+              setLoadingVacancies(false);
               return;
             }
           } catch {}
@@ -432,6 +438,7 @@ function VacancyPanel({
             })),
         );
         setVacancyItems(defaults);
+        setLoadingVacancies(false);
       })
       .catch(() => {
         const cached = localStorage.getItem("hybe_vacancies_v2");
@@ -451,6 +458,7 @@ function VacancyPanel({
             })),
         );
         setVacancyItems(defaults);
+        setLoadingVacancies(false);
       });
   }, [actor]);
 
@@ -750,6 +758,17 @@ function VacancyPanel({
         {/* ── USER VIEW ── */}
         {!isAdmin && (
           <>
+            {/* Syncing indicator */}
+            {loadingVacancies && (
+              <div className="text-center py-2 mb-2">
+                <p
+                  className="font-cinzel text-xs tracking-widest uppercase opacity-40"
+                  style={{ color: "oklch(75 0.18 50)" }}
+                >
+                  Syncing...
+                </p>
+              </div>
+            )}
             {/* Search bar */}
             <div className="relative mb-6">
               <span
@@ -1818,6 +1837,63 @@ function ConfirmationPage({ onDone }: { onDone: () => void }) {
   );
 }
 
+export class AuditionErrorBoundary extends React.Component<
+  { children: React.ReactNode; onBack: () => void },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; onBack: () => void }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div
+          style={{
+            minHeight: "100vh",
+            background: "#000",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <p
+            style={{
+              color: "oklch(75 0.18 50)",
+              fontFamily: "Cinzel",
+              letterSpacing: "0.2em",
+              textAlign: "center",
+              padding: "0 1rem",
+            }}
+          >
+            Something went wrong. Please go back and try again.
+          </p>
+          <button
+            type="button"
+            onClick={this.props.onBack}
+            style={{
+              marginTop: "1rem",
+              color: "oklch(75 0.18 50)",
+              background: "transparent",
+              border: "1px solid oklch(75 0.18 50 / 0.5)",
+              borderRadius: "8px",
+              padding: "8px 20px",
+              cursor: "pointer",
+            }}
+          >
+            ← Back
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // ─── Main AuditionFlow ────────────────────────────────────────────────────────
 export function AuditionFlow({ onBack }: { onBack: () => void }) {
   const { actor } = useActor();
@@ -1842,37 +1918,41 @@ export function AuditionFlow({ onBack }: { onBack: () => void }) {
       .catch(() => {});
   }, [actor]);
 
-  if (step === "rules") {
-    return <RulesOverlay onNext={() => setStep("vacancy")} rules={rules} />;
-  }
+  const content = (() => {
+    if (step === "rules") {
+      return <RulesOverlay onNext={() => setStep("vacancy")} rules={rules} />;
+    }
+    if (step === "vacancy") {
+      return (
+        <VacancyPanel
+          onBack={onBack}
+          onSelectVacancy={(v) => {
+            setSelectedVacancy(v);
+            setStep("form");
+          }}
+          rules={rules}
+          onRulesChange={setRules}
+        />
+      );
+    }
+    if (step === "form" && selectedVacancy) {
+      return (
+        <ApplicationForm
+          vacancy={selectedVacancy}
+          onBack={() => setStep("vacancy")}
+          onSubmit={() => setStep("confirmation")}
+        />
+      );
+    }
+    if (step === "confirmation") {
+      return <ConfirmationPage onDone={onBack} />;
+    }
+    return null;
+  })();
 
-  if (step === "vacancy") {
-    return (
-      <VacancyPanel
-        onBack={onBack}
-        onSelectVacancy={(v) => {
-          setSelectedVacancy(v);
-          setStep("form");
-        }}
-        rules={rules}
-        onRulesChange={setRules}
-      />
-    );
-  }
-
-  if (step === "form" && selectedVacancy) {
-    return (
-      <ApplicationForm
-        vacancy={selectedVacancy}
-        onBack={() => setStep("vacancy")}
-        onSubmit={() => setStep("confirmation")}
-      />
-    );
-  }
-
-  if (step === "confirmation") {
-    return <ConfirmationPage onDone={onBack} />;
-  }
-
-  return null;
+  return (
+    <div style={{ minHeight: "100vh", width: "100%", background: "#000" }}>
+      {content}
+    </div>
+  );
 }
